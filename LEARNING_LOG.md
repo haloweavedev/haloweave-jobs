@@ -456,7 +456,7 @@ Next Steps:
 a. Identifying Merge Conflicts:
    - Git reports conflicts during merge operation
    - Conflicts typically occur in files modified in both branches
-
+git merge feature/landing-page
 b. Resolving Process:
    1. Open conflicting files in text editor
    2. Locate conflict markers (<<<<<<< HEAD, =======, >>>>>>>)
@@ -480,3 +480,90 @@ Next Steps:
 - Verify the merged changes on GitHub
 - Review the project to ensure it works as expected after the merge
 - Consider setting up pre-merge checks or code reviews to catch potential conflicts earlier
+
+25. Implementing Responsive Design with Tailwind CSS in Next.js
+
+a. Mobile-First Approach:
+   - Start with mobile layouts and use Tailwind's responsive prefixes (sm:, md:, lg:, xl:) to adjust for larger screens
+   - Use flexbox and grid for flexible, responsive layouts
+
+b. Custom Color Scheme:
+   - Define custom colors in tailwind.config.js
+   - Use CSS variables in globals.css for easy theme management
+
+c. Typography:
+   - Integrate custom fonts (e.g., Poppins) using next/
+
+   28. Understanding Project Structure and Global UI Enhancements
+
+a. Utils Folder and Files:
+   - The `utils` folder contains utility functions that can be used across the entire application.
+   - `smoothScroll.js`: Initializes and manages the Lenis smooth scrolling library.
+   - `animations.js`: Sets up GSAP animations that can be applied globally.
+
+   These utility files help separate concerns and keep the main components clean and focused on their primary responsibilities.
+
+b. Components Folder and Layout Component:
+   - The `components` folder holds reusable React components.
+   - `Layout.tsx`: A wrapper component that applies global UI enhancements.
+     - It initializes smooth scrolling and animations using the utility functions.
+     - Wraps all pages, ensuring consistent behavior across the entire application.
+
+c. App Layout (app/layout.tsx):
+   - The root layout file in Next.js 13+ app directory structure.
+   - Incorporates the Layout component to apply global UI enhancements.
+   - Includes necessary scripts and metadata for the entire application.
+
+d. Purpose and Benefits:
+   - Separation of Concerns: Keeps code organized and maintainable.
+   - Reusability: Utility functions and components can be easily used across different parts of the app.
+   - Global Application: Ensures consistent UI enhancements across all pages.
+   - Performance: Initializes smooth scrolling and animations only once, improving efficiency.
+
+e. Implementation in Pages:
+   - To animate specific sections in your pages (e.g., app/page.tsx), add the 'animate-on-scroll' class:
+     ```jsx
+     <section className="animate-on-scroll">
+       {/* Your section content */}
+     </section>
+     ```
+
+Lesson Learned: Structuring a Next.js project with utility folders, reusable components, and a global layout helps create a more organized, efficient, and maintainable codebase. This approach allows for consistent UI enhancements across the entire application while keeping individual page components clean and focused.
+
+Next Steps:
+- Implement error handling in smooth scrolling and animation initialization.
+- Create custom hooks for more complex animations if needed.
+- Consider adding a configuration file to easily toggle global UI enhancements.
+
+29. Understanding Client and Server Components in Next.js 13+
+
+a. Server Components (Default in app directory):
+   - Render on the server, reducing JavaScript sent to the client.
+   - Cannot use client-side only features like useState or useEffect.
+   - Ideal for static or server-rendered content.
+
+b. Client Components:
+   - Marked with 'use client' directive at the top of the file.
+   - Can use React hooks and interact with the browser API.
+   - Necessary for components that need client-side interactivity.
+
+c. Layout Component as a Client Component:
+   - Added 'use client' to Layout.tsx to enable useEffect.
+   - Allows initialization of smooth scrolling and animations on the client side.
+
+d. Implications:
+   - Client components are downloaded and executed in the browser.
+   - May slightly increase initial load time but enable dynamic features.
+   - Balance between server and client components is key for optimal performance.
+
+e. Best Practices:
+   - Use server components by default for better performance.
+   - Switch to client components when necessary for interactivity or client-side APIs.
+   - Keep client components as small and focused as possible.
+
+Lesson Learned: In Next.js 13+ with the app directory, understanding the distinction between server and client components is crucial. Properly marking components as client-side when needed ensures that features requiring browser APIs or React hooks function correctly while maintaining the performance benefits of server components where possible.
+
+Next Steps:
+- Review other components in the project to ensure proper use of server/client components.
+- Consider splitting components into server and client parts where applicable for optimal performance.
+- Explore Next.js documentation on React essentials for deeper understanding of this concept.

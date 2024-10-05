@@ -1,35 +1,66 @@
+'use client';
+
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { initSmoothScroll } from '../utils/smoothScroll'
+import { initAnimations } from '../utils/animations'
 
 export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    initSmoothScroll();
+    initAnimations();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white font-poppins">
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Image
-            src="/haloweaveLogoHorizontal.svg"
-            alt="Haloweave Jobs Logo"
-            width={120}
-            height={40}
-          />
-          <div className="hidden md:flex space-x-4">
-            <NavLink href="#features">Features</NavLink>
-            <NavLink href="#how-it-works">How It Works</NavLink>
-            <NavLink href="#pricing">Pricing</NavLink>
-            <NavLink href="#contact">Contact</NavLink>
+      <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 transition-all duration-300">
+        <nav className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <Image
+              src="/haloweaveLogoHorizontal.svg"
+              alt="Haloweave Jobs Logo"
+              width={120}
+              height={40}
+            />
+            <div className="hidden md:flex space-x-8">
+              <NavLink href="#features">Features</NavLink>
+              <NavLink href="#how-it-works">How It Works</NavLink>
+              <NavLink href="#pricing">Pricing</NavLink>
+              <NavLink href="#contact">Contact</NavLink>
+            </div>
+            <div className="hidden md:flex space-x-4 items-center">
+              <Link href="/login" className="text-gray-600 hover:text-primary transition duration-300">Login</Link>
+              <Link href="/signup" className="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300">Sign Up</Link>
+            </div>
+            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
-          <div className="flex space-x-4">
-            <Link href="/login" className="text-gray-600 hover:text-primary">Login</Link>
-            <Link href="/signup" className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Sign Up</Link>
-          </div>
+          {isMenuOpen && (
+            <div className="md:hidden mt-4">
+              <NavLink href="#features">Features</NavLink>
+              <NavLink href="#how-it-works">How It Works</NavLink>
+              <NavLink href="#pricing">Pricing</NavLink>
+              <NavLink href="#contact">Contact</NavLink>
+              <div className="mt-4 space-y-2">
+                <Link href="/login" className="block text-gray-600 hover:text-primary transition duration-300">Login</Link>
+                <Link href="/signup" className="block bg-primary text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 text-center">Sign Up</Link>
+              </div>
+            </div>
+          )}
         </nav>
       </header>
 
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-blue-50 to-white py-20">
+        <section className="bg-gradient-to-r from-blue-50 to-white py-20 pt-[10rem]">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center">
+            <div className="flex flex-col md:flex-row items-center gap-[30px]">
               <div className="md:w-1/2 mb-8 md:mb-0">
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Simplify Your Job Search with AI-Powered Precision</h1>
                 <p className="text-xl text-gray-600 mb-8">Your personal job assistant that analyzes your resume, organizes your emails, and finds tailored opportunities.</p>
