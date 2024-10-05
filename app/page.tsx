@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { initSmoothScroll } from '../utils/smoothScroll'
 import { initAnimations } from '../utils/animations'
 
@@ -228,13 +228,24 @@ export default function Home() {
   )
 }
 
-function NavLink({ href, children }) {
+interface NavLinkProps {
+  href: string;
+  children: ReactNode;
+}
+
+function NavLink({ href, children }: NavLinkProps) {
   return (
     <Link href={href} className="text-gray-600 hover:text-primary">{children}</Link>
   )
 }
 
-function StepCard({ number, title, description }) {
+interface StepCardProps {
+  number: number;
+  title: string;
+  description: string;
+}
+
+function StepCard({ number, title, description }: StepCardProps) {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mb-4">
@@ -246,7 +257,13 @@ function StepCard({ number, title, description }) {
   )
 }
 
-function FeatureCard({ title, description, icon }) {
+interface FeatureCardProps {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+function FeatureCard({ title, description, icon }: FeatureCardProps) {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <div className="text-4xl mb-4">{icon}</div>
@@ -256,7 +273,12 @@ function FeatureCard({ title, description, icon }) {
   )
 }
 
-function ReasonCard({ title, description }) {
+interface ReasonCardProps {
+  title: string;
+  description: string;
+}
+
+function ReasonCard({ title, description }: ReasonCardProps) {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
