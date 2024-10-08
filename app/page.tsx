@@ -3,13 +3,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, ReactNode } from 'react'
-import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
+import { SignInButton, SignUpButton, UserButton, useAuth } from '@clerk/nextjs'
 import { initSmoothScroll } from '../utils/smoothScroll'
 import { initAnimations } from '../utils/animations'
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     initSmoothScroll();
@@ -62,23 +62,24 @@ export default function Home() {
               <NavLink href="#how-it-works">How It Works</NavLink>
               <NavLink href="#pricing">Pricing</NavLink>
               <NavLink href="#contact">Contact</NavLink>
-              <div className="mt-4 space-y-2">
-                {isSignedIn ? (
-                  <>
-                    <Link href="/dashboard" className="block text-gray-600 hover:text-primary transition duration-300">Dashboard</Link>
-                    <UserButton afterSignOutUrl="/" />
-                  </>
-                ) : (
-                  <>
-                    <SignInButton mode="modal">
-                      <button className="block text-gray-600 hover:text-primary transition duration-300">Login</button>
-                    </SignInButton>
-                    <SignUpButton mode="modal">
-                      <button className="block bg-primary text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 text-center">Sign Up</button>
-                    </SignUpButton>
-                  </>
-                )}
-              </div>
+              
+  <div className="hidden md:flex space-x-4 items-center">
+    {isSignedIn ? (
+      <>
+        <Link href="/dashboard" className="text-gray-600 hover:text-primary transition duration-300">Dashboard</Link>
+        <UserButton afterSignOutUrl="/" />
+      </>
+    ) : (
+      <>
+        <SignInButton mode="modal">
+          <button className="text-gray-600 hover:text-primary transition duration-300">Login</button>
+        </SignInButton>
+        <SignUpButton mode="modal">
+          <button className="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300">Sign Up</button>
+        </SignUpButton>
+      </>
+    )}
+  </div>
             </div>
           )}
         </nav>

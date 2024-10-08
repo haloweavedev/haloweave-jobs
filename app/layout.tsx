@@ -1,7 +1,9 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
-import Layout from '../components/Layout'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Haloweave Jobs - AI-Powered Job Application Assistant',
@@ -15,14 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <head>
-          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
-        </head>
-        <body>
-          <Layout>{children}</Layout>
-        </body>
+      <html lang="en" className={inter.className}>
+        <body>{children}</body>
       </html>
     </ClerkProvider>
   )
