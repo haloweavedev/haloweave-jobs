@@ -3,30 +3,58 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Header from '@/components/Header';
+import UserMenu from '@/components/UserMenu';
 
 export default function Dashboard() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Link href="/user-profile">
-          <Button variant="outline">View Profile</Button>
-        </Link>
-      </div>
-      
-      {/* Overview / Summary Section */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Overview</CardTitle>
-          <CardDescription>Your job application summary</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Job Emails" value="0" />
-          <StatCard title="Applications Sent" value="0" />
-          <StatCard title="Callbacks / Interviews" value="0" />
-          <StatCard title="Success Rate" value="0%" />
-        </CardContent>
-      </Card>
+  <>  
+    <Header />
+      <div className="container mx-auto px-4 py-8 mt-20">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <UserMenu />
+        </div>
+        
+        {/* Quick Actions */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="flex space-x-4">
+            <Button>Upload Resume</Button>
+            <Button variant="outline">Search Jobs</Button>
+            <Button variant="outline">Schedule Interview</Button>
+          </CardContent>
+        </Card>
+
+        {/* Overview / Summary Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Overview</CardTitle>
+            <CardDescription>Your job application summary</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard title="Total Job Emails" value="0" />
+            <StatCard title="Applications Sent" value="0" />
+            <StatCard title="Callbacks / Interviews" value="0" />
+            <StatCard title="Success Rate" value="0%" />
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li>Applied to Software Engineer position at TechCorp</li>
+              <li>Received interview invitation from InnovateTech</li>
+              <li>Updated resume</li>
+            </ul>
+          </CardContent>
+        </Card>
 
       {/* Inbox & Email Management */}
       <Card className="mb-8">
@@ -82,6 +110,7 @@ export default function Dashboard() {
         </CardContent>
       </Card>
     </div>
+  </>
   );
 }
 
