@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Header from '@/components/Header';
-import UserMenu from '@/components/UserMenu';
 
 export default function Dashboard() {
   return (
@@ -13,7 +12,6 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <UserMenu />
         </div>
         
         {/* Quick Actions */}
