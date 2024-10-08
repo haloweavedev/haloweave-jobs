@@ -1,14 +1,18 @@
 'use client';
 
-import { UserProfile } from "@clerk/nextjs";
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 export default function Dashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Link href="/user-profile">
+          <Button variant="outline">View Profile</Button>
+        </Link>
+      </div>
       
       {/* Overview / Summary Section */}
       <Card className="mb-8">
@@ -58,14 +62,12 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Profile & Resume Management */}
+      {/* Resume Management */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Profile & Resume</CardTitle>
         </CardHeader>
         <CardContent>
-          <UserProfile />
-          <Separator className="my-4" />
           <p>Resume upload and analysis features will be added here.</p>
         </CardContent>
       </Card>

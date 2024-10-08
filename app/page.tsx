@@ -62,24 +62,23 @@ export default function Home() {
               <NavLink href="#how-it-works">How It Works</NavLink>
               <NavLink href="#pricing">Pricing</NavLink>
               <NavLink href="#contact">Contact</NavLink>
-              
-  <div className="hidden md:flex space-x-4 items-center">
-    {isSignedIn ? (
-      <>
-        <Link href="/dashboard" className="text-gray-600 hover:text-primary transition duration-300">Dashboard</Link>
-        <UserButton afterSignOutUrl="/" />
-      </>
-    ) : (
-      <>
-        <SignInButton mode="modal">
-          <button className="text-gray-600 hover:text-primary transition duration-300">Login</button>
-        </SignInButton>
-        <SignUpButton mode="modal">
-          <button className="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300">Sign Up</button>
-        </SignUpButton>
-      </>
-    )}
-  </div>
+              <div className="mt-4 space-y-2">
+                {isSignedIn ? (
+                  <>
+                    <Link href="/dashboard" className="block text-gray-600 hover:text-primary transition duration-300">Dashboard</Link>
+                    <UserButton afterSignOutUrl="/" />
+                  </>
+                ) : (
+                  <>
+                    <SignInButton mode="modal">
+                      <button className="block text-gray-600 hover:text-primary transition duration-300">Login</button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <button className="block bg-primary text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 text-center">Sign Up</button>
+                    </SignUpButton>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </nav>
@@ -94,7 +93,13 @@ export default function Home() {
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Simplify Your Job Search with AI-Powered Precision</h1>
                 <p className="text-xl text-gray-600 mb-8">Your personal job assistant that analyzes your resume, organizes your emails, and finds tailored opportunities.</p>
                 <div className="flex space-x-4">
-                  <Link href="/signup" className="bg-primary text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">Start Your Free Trial</Link>
+                  {isSignedIn ? (
+                    <Link href="/dashboard" className="bg-primary text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">Go to Dashboard</Link>
+                  ) : (
+                    <SignUpButton mode="modal">
+                      <button className="bg-primary text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">Start Your Free Trial</button>
+                    </SignUpButton>
+                  )}
                   <Link href="#how-it-works" className="border border-primary text-primary px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50 transition">Learn More</Link>
                 </div>
               </div>

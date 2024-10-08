@@ -1,23 +1,32 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Define routes that are public (sign-in and sign-up)
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)']);
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/about',
+  '/pricing',
+  '/contact',
+  '/terms',
+  '/privacy'
+]);
 
-// Middleware implementation
-export default clerkMiddleware((auth, req) => {
-  // Protect all routes except those defined as public
-  if (!isPublicRoute(req)) {
-    auth().protect(); // Redirect to sign-in if user is not authenticated
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = auth();
+
+  if (isPublicRoute(req)) {
+    return;
+  }
+
+  // If the user is not authenticated, redirect to the sign-in page
+  if (!userId) {
+    return Response.redirect(new URL('/sign-in', req.url));
   }
 });
 
-// No debug option is specified here to disable debug messages
-
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    '/((?!.+\\.[\\w]+$|_next).*)',
+    '/(api|trpc)(.*)'
   ],
 };
