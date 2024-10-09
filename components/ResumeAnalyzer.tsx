@@ -72,7 +72,7 @@ export default function ResumeAnalyzer() {
   };
 
   return (
-    <Card>
+    <Card className="mb-8">
       <CardHeader>
         <CardTitle>AI Resume Analyzer</CardTitle>
         <CardDescription>Upload your resume for AI-powered analysis</CardDescription>

@@ -54,7 +54,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Resume Analyzer */}
-        <ResumeAnalyzer />
+        <ResumeAnalyzer/>
 
         {/* Chatbot */}
         <Card className="mb-8">
