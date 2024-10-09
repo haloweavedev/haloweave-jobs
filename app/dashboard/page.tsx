@@ -1,38 +1,51 @@
 'use client';
 
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Mail } from "lucide-react";
 import Header from '@/components/Header';
+import ResumeAnalyzer from '@/components/ResumeAnalyzer';
+import { useState } from 'react';
 
 export default function Dashboard() {
+  const [isGmailSynced, setIsGmailSynced] = useState(false);
+
+  const handleGmailSync = () => {
+    // Implement Gmail sync logic here
+    setIsGmailSynced(true);
+  };
+
   return (
-  <>  
-    <Header />
+    <>  
+      <Header />
       <div className="container mx-auto px-4 py-8 mt-20">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-        </div>
+        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         
-        {/* Quick Actions */}
+        {/* Gmail Sync */}
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="flex space-x-4">
-            <Button>Upload Resume</Button>
-            <Button variant="outline">Search Jobs</Button>
-            <Button variant="outline">Schedule Interview</Button>
+          <CardContent className="flex flex-col items-center justify-center p-6">
+            <Mail className="w-12 h-12 mb-4 text-primary" />
+            <h2 className="text-2xl font-semibold mb-2">Sync your Gmail</h2>
+            <p className="text-muted-foreground mb-4 text-center">
+              Connect your Gmail account to start organizing your job applications automatically.
+            </p>
+            <Button 
+              className="w-full max-w-xs transition-colors hover:bg-black"
+              onClick={handleGmailSync}
+              disabled={isGmailSynced}
+            >
+              {isGmailSynced ? 'Gmail Synced' : 'Sync Gmail'}
+            </Button>
           </CardContent>
         </Card>
 
-        {/* Overview / Summary Section */}
+        {/* Stats */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Overview</CardTitle>
+            <CardTitle>Application Statistics</CardTitle>
             <CardDescription>Your job application summary</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Total Job Emails" value="0" />
             <StatCard title="Applications Sent" value="0" />
             <StatCard title="Callbacks / Interviews" value="0" />
@@ -40,83 +53,44 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Resume Analyzer */}
+        <ResumeAnalyzer />
+
+        {/* Chatbot */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>AI Assistant</CardTitle>
+            <CardDescription>Chat with your personal job search assistant</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              <li>Applied to Software Engineer position at TechCorp</li>
-              <li>Received interview invitation from InnovateTech</li>
-              <li>Updated resume</li>
-            </ul>
+            <p className="text-muted-foreground">Our AI-powered chatbot is coming soon to help you with your job search!</p>
           </CardContent>
         </Card>
 
-      {/* Inbox & Email Management */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Inbox & Email Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex space-x-4 mb-4">
-            <Button>Sync Gmail</Button>
-            <Button variant="outline">Disconnect Gmail</Button>
-          </div>
-          <p>Email categorization will be displayed here.</p>
-        </CardContent>
-      </Card>
-
-      {/* AI-Powered Interaction */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Chat with Your Inbox</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>AI chatbot interface will be implemented here.</p>
-        </CardContent>
-      </Card>
-
-      {/* Application Tracker */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Application Tracker</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Interactive job application timeline and job opportunities board will be displayed here.</p>
-        </CardContent>
-      </Card>
-
-      {/* Resume Management */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Profile & Resume</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Resume upload and analysis features will be added here.</p>
-        </CardContent>
-      </Card>
-
-      {/* Placeholder for other sections */}
-      <Card>
-        <CardHeader>
-          <CardTitle>More Features Coming Soon</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Notifications, Analytics & Insights, and other features will be added in future updates.</p>
-        </CardContent>
-      </Card>
-    </div>
-  </>
+        {/* Suggested Jobs */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Suggested Jobs</CardTitle>
+            <CardDescription>Personalized job recommendations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">We're working on integrating job recommendations from Adzuna. Stay tuned!</p>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
 
 function StatCard({ title, value }: { title: string, value: string }) {
   return (
-    <div className="bg-gray-100 p-4 rounded-lg">
-      <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-      <p className="text-2xl font-bold">{value}</p>
-    </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
   );
 }
