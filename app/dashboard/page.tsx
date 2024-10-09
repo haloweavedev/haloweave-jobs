@@ -74,7 +74,7 @@ export default function Dashboard() {
             <CardDescription>Personalized job recommendations</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">We're working on integrating job recommendations from Adzuna. Stay tuned!</p>
+            <p className="text-muted-foreground">We are working on integrating job recommendations from Adzuna. Stay tuned!</p>
           </CardContent>
         </Card>
       </div>
