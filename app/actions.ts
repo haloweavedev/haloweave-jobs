@@ -192,7 +192,16 @@ export async function getChatResponse(input: string) {
     console.log('Sending request to OpenAI');
     const completion = await openai.createChatCompletion({
       model: 'gpt-4o-mini',
-      messages: messages,
+      messages: [
+        {
+          role: "system",
+          content: "You are an AI assistant helping with job application related queries. Use the provided email context to answer questions. Only reference information explicitly stated in the emails."
+        },
+        {
+          role: "user",
+          content: `Here are my recent job-related emails:\n\n${emailContext}\n\nBased on these emails, please answer the following question: ${input}`
+        }
+      ],
       max_tokens: 1500,
       temperature: 0.7,
     });
