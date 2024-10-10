@@ -192,7 +192,7 @@ export async function getChatResponse(input: string) {
     console.log('Sending request to OpenAI');
     const completion = await openai.createChatCompletion({
       model: 'gpt-4o-mini',
-      messages: messages,
+      messages: messages as ChatCompletionMessageParam[], // Explicitly cast as the correct type if needed
       max_tokens: 1500,
       temperature: 0.7,
     });
