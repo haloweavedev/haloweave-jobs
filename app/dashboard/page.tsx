@@ -1,62 +1,138 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Mail } from "lucide-react";
-import Header from '@/components/Header';
-import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Mail, Briefcase, User, Building } from "lucide-react";
+import Header from '@/components/Header';
+import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
-  const [isGmailSynced, setIsGmailSynced] = useState(false);
-  const [emailCount, setEmailCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const [isGmailConnected, setIsGmailConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>({});
+  const [labeledCount, setLabeledCount] = useState<number>(0);
+  const [jobRelatedEmails, setJobRelatedEmails] = useState<number>(0);
+  const [sentApplications, setSentApplications] = useState<number>(0);
+  const [receivedResponses, setReceivedResponses] = useState<number>(0);
 
   useEffect(() => {
     if (isLoaded && user) {
-      checkGmailSyncStatus();
+      checkGmailStatus();
+      fetchJobApplicationStats();
     }
 
     const errorParam = searchParams.get('error');
-    if (errorParam === 'CallbackFailed') {
-      setError('Failed to sync Gmail. Please try again.');
+    const errorMessage = searchParams.get('message');
+    if (errorParam) {
+      setError(`Error: ${errorParam}${errorMessage ? ` - ${decodeURIComponent(errorMessage)}` : ''}`);
     }
-  }, [isLoaded, user, searchParams]);
 
-  const checkGmailSyncStatus = async () => {
+    const successParam = searchParams.get('success');
+    if (successParam === 'GmailConnected') {
+      setIsGmailConnected(true);
+      setSuccessMessage('Gmail connected successfully!');
+      setError(null);
+      router.replace('/dashboard'); // Clear URL params
+    }
+  }, [isLoaded, user, searchParams, router]);
+
+  const checkGmailStatus = async () => {
     try {
       const response = await fetch('/api/gmail/sync-status');
       if (response.ok) {
-        const { isSynced, count } = await response.json();
-        setIsGmailSynced(isSynced);
-        if (isSynced) {
-          setEmailCount(count);
-        }
+        const { isSynced } = await response.json();
+        setIsGmailConnected(isSynced);
+      } else {
+        throw new Error('Failed to check Gmail status');
       }
     } catch (error) {
-      console.error('Error checking Gmail sync status:', error);
-      setError('Failed to check Gmail sync status. Please try again.');
+      console.error('Error checking Gmail status:', error);
+      setError('Failed to check Gmail status');
     }
   };
 
-  const handleGmailSync = async () => {
+  const handleConnectGmail = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/gmail/authorize', {
-        method: 'POST',
-      });
+      const response = await fetch('/api/gmail/connect');
       if (response.ok) {
         const { url } = await response.json();
         window.location.href = url;
       } else {
-        throw new Error('Failed to initiate Gmail sync');
+        throw new Error('Failed to initiate Gmail connection');
+      }
+    } catch (error) {
+      console.error('Error connecting Gmail:', error);
+      setError('Failed to connect Gmail');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSyncGmail = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/gmail/sync', { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        setLabeledCount(data.labeledCount);
+        setJobRelatedEmails(data.jobRelatedEmailsCount);
+        setSentApplications(data.sentApplicationsCount);
+        setReceivedResponses(data.receivedResponsesCount);
+        setSuccessMessage(`Successfully labeled ${data.labeledCount} emails and processed ${data.jobRelatedEmailsCount} job-related emails`);
+        await checkGmailStatus();
+        await fetchJobApplicationStats();
+      } else {
+        throw new Error('Failed to sync Gmail');
       }
     } catch (error) {
       console.error('Error syncing Gmail:', error);
-      setError('Failed to sync Gmail. Please try again.');
+      setError('Failed to sync Gmail');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDisconnectGmail = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/gmail/disconnect', { method: 'POST' });
+      if (response.ok) {
+        setIsGmailConnected(false);
+        setLabeledCount(0);
+        setJobRelatedEmails(0);
+        setSentApplications(0);
+        setReceivedResponses(0);
+      } else {
+        throw new Error('Failed to disconnect Gmail');
+      }
+    } catch (error) {
+      console.error('Error disconnecting Gmail:', error);
+      setError('Failed to disconnect Gmail');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchJobApplicationStats = async () => {
+    try {
+      const response = await fetch('/api/job-applications/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Error fetching job application stats:', error);
+      setError('Failed to fetch job application stats. Please try again.');
     }
   };
 
@@ -65,66 +141,102 @@ export default function Dashboard() {
   }
 
   return (
-    <>  
+    <>
       <Header />
       <div className="container mx-auto px-4 py-8 mt-20">
         <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
         
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong className="font-bold">Error: </strong>
             <span className="block sm:inline">{error}</span>
           </div>
         )}
+
+        {successMessage && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span className="block sm:inline">{successMessage}</span>
+          </div>
+        )}
         
-        {/* Gmail Sync */}
         <Card className="mb-8">
-          <CardContent className="flex flex-col items-center justify-center p-6">
-            <Mail className="w-12 h-12 mb-4 text-primary" />
-            <h2 className="text-2xl font-semibold mb-2">Gmail Integration</h2>
-            {isGmailSynced ? (
-              <>
-                <p className="text-muted-foreground mb-4 text-center">
-                  Your Gmail account is connected.
-                </p>
-                {emailCount !== null && (
-                  <p className="mt-4">You have sent {emailCount} emails.</p>
-                )}
-              </>
+          <CardHeader>
+            <CardTitle>Gmail Integration</CardTitle>
+            <CardDescription>Connect and sync your Gmail account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isGmailConnected ? (
+              <div>
+                <p className="mb-4">Gmail is connected and synced.</p>
+                <p className="mb-2">Labeled job-related emails: {labeledCount}</p>
+                <p className="mb-2">Processed job-related emails: {jobRelatedEmails}</p>
+                <p className="mb-2">Sent job applications: {sentApplications}</p>
+                <p className="mb-4">Received responses: {receivedResponses}</p>
+                <div className="flex space-x-4">
+                  <Button onClick={handleSyncGmail} disabled={isLoading}>
+                    {isLoading ? 'Syncing...' : 'Sync Gmail'}
+                  </Button>
+                  <Button onClick={handleSyncGmail} disabled={isLoading} variant="outline">
+                    Refresh Email Data
+                  </Button>
+                </div>
+              </div>
             ) : (
-              <>
-                <p className="text-muted-foreground mb-4 text-center">
-                  Connect your Gmail account to start organizing your job applications automatically.
-                </p>
-                <Button 
-                  className="w-full max-w-xs transition-colors hover:bg-black"
-                  onClick={handleGmailSync}
-                >
-                  Sync Gmail
-                </Button>
-              </>
+              <Button onClick={handleConnectGmail} disabled={isLoading}>
+                {isLoading ? 'Connecting...' : 'Connect Gmail'}
+              </Button>
             )}
           </CardContent>
         </Card>
+        
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="Total Applications"
+            value={stats?.totalApplications || 0}
+            icon={<Briefcase className="h-8 w-8 text-blue-500" />}
+          />
+          <StatCard
+            title="Response Rate"
+            value={`${((stats?.responseRate || 0) * 100).toFixed(1)}%`}
+            icon={<Mail className="h-8 w-8 text-green-500" />}
+          />
+          <StatCard
+            title="Interviews Scheduled"
+            value={stats?.statusBreakdown?.find(s => s.status === 'INTERVIEW_SCHEDULED')?._count || 0}
+            icon={<User className="h-8 w-8 text-purple-500" />}
+          />
+          <StatCard
+            title="Offers Received"
+            value={stats?.statusBreakdown?.find(s => s.status === 'OFFER_RECEIVED')?._count || 0}
+            icon={<Building className="h-8 w-8 text-yellow-500" />}
+          />
+        </div>
 
-        {/* Stats */}
+        {/* Application Status Breakdown */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Application Statistics</CardTitle>
-            <CardDescription>Your job application summary</CardDescription>
+            <CardTitle>Application Status Breakdown</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Total Job Emails" value="0" />
-            <StatCard title="Applications Sent" value="0" />
-            <StatCard title="Callbacks / Interviews" value="0" />
-            <StatCard title="Success Rate" value="0%" />
+          <CardContent>
+            {stats?.statusBreakdown?.map((status) => (
+              <div key={status.status} className="mb-4">
+                <div className="flex justify-between mb-1">
+                  <span>{status.status.replace('_', ' ')}</span>
+                  <span>{status._count}</span>
+                </div>
+                <Progress 
+                  value={(status._count / (stats.totalApplications || 1)) * 100} 
+                  className="h-2"
+                />
+              </div>
+            ))}
           </CardContent>
         </Card>
 
         {/* Resume Analyzer */}
-        <ResumeAnalyzer/>
+        <ResumeAnalyzer />
 
-        {/* Chatbot */}
+        {/* AI Assistant */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>AI Assistant</CardTitle>
@@ -150,11 +262,18 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ title, value }: { title: string, value: string }) {
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+}
+
+function StatCard({ title, value, icon }: StatCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        {icon}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>

@@ -1,5 +1,8 @@
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify'];
 
@@ -11,28 +14,51 @@ export function getOAuth2Client(): OAuth2Client {
   );
 }
 
-export async function getGmailClient(accessToken: string) {
+export async function getGmailClient(userId: string) {
+  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  if (!user || !user.gmailToken) {
+    throw new Error('User not found or Gmail not connected');
+  }
+
   const oauth2Client = getOAuth2Client();
-  oauth2Client.setCredentials({ access_token: accessToken });
-  
+  oauth2Client.setCredentials({
+    access_token: user.gmailToken,
+    refresh_token: user.gmailRefreshToken,
+  });
+
+  oauth2Client.on('tokens', async (tokens) => {
+    if (tokens.access_token) {
+      await prisma.user.update({
+        where: { clerkId: userId },
+        data: { gmailToken: tokens.access_token },
+      });
+    }
+    if (tokens.refresh_token) {
+      await prisma.user.update({
+        where: { clerkId: userId },
+        data: { gmailRefreshToken: tokens.refresh_token },
+      });
+    }
+  });
+
+  try {
+    await oauth2Client.getAccessToken();
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    throw new Error('Failed to refresh Google token');
+  }
+
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
 
-export async function getSentEmailCount(gmailClient: any): Promise<number> {
-  let pageToken = undefined;
-  let totalCount = 0;
-
-  do {
-    const response = await gmailClient.users.messages.list({
-      userId: 'me',
-      q: 'in:sent',
-      maxResults: 500,
-      pageToken: pageToken,
-    });
-
-    totalCount += response.data.messages?.length || 0;
-    pageToken = response.data.nextPageToken;
-  } while (pageToken);
-
-  return totalCount;
+export async function disconnectGmail(userId: string) {
+  await prisma.user.update({
+    where: { clerkId: userId },
+    data: {
+      gmailSynced: false,
+      gmailToken: null,
+      gmailRefreshToken: null,
+      lastSyncTime: null,
+    },
+  });
 }

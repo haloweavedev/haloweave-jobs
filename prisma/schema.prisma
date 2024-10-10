@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -9,28 +8,56 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  clerkId        String   @unique
-  email          String   @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  resumeData     Json?
-  resumeAnalysis Json?
-  gmailToken     String?
-  gmailSynced    Boolean  @default(false)
-  sentEmailCount Int      @default(0)
-  lastSyncTime   DateTime?
-  jobApplications JobApplication[]
+  id                String           @id @default(cuid())
+  clerkId           String           @unique
+  email             String           @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  gmailSynced       Boolean          @default(false)
+  gmailToken        String?
+  gmailRefreshToken String?
+  lastSyncTime      DateTime?
+  emails            Email[]
+  jobApplications   JobApplication[]
+}
+
+model Email {
+  id            String   @id @default(cuid())
+  userId        String
+  messageId     String   @unique
+  threadId      String
+  from          String
+  to            String[]
+  subject       String
+  snippet       String
+  body          String   @db.Text
+  sentDate      DateTime
+  receivedDate  DateTime?
+  labels        String[]
+  user          User     @relation(fields: [userId], references: [id])
+  jobApplication JobApplication?
 }
 
 model JobApplication {
-  id          String   @id @default(cuid())
-  userId      String
-  companyName String
-  jobTitle    String
-  status      String
-  appliedDate DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id])
+  id               String            @id @default(cuid())
+  userId           String
+  emailId          String            @unique
+  company          String
+  jobTitle         String?
+  status           ApplicationStatus @default(APPLIED)
+  appliedDate      DateTime
+  lastResponseDate DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  user             User              @relation(fields: [userId], references: [id])
+  email            Email             @relation(fields: [emailId], references: [id])
+}
+
+enum ApplicationStatus {
+  APPLIED
+  RESPONSE_RECEIVED
+  INTERVIEW_SCHEDULED
+  OFFER_RECEIVED
+  REJECTED
+  ACCEPTED
 }
