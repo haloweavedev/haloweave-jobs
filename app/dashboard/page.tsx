@@ -283,14 +283,7 @@ export default function Dashboard() {
 
         {/* Chatbot */}
         {emails.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>AI Assistant</CardTitle>
-            </CardHeader>
-            <CardContent>
-               <Chatbot />
-            </CardContent>
-          </Card>
+            <Chatbot />
         )}
 
         {/* Resume Analyzer */}
