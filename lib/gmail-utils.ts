@@ -3,6 +3,28 @@ import { OAuth2Client } from 'google-auth-library';
 
 const JOB_LABEL_NAME = 'Job Applications';
 
+// Refresh Access Token Function
+export async function refreshAccessToken(refreshToken: string): Promise<string | null> {
+  const oauth2Client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/gmail/callback`
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken,
+  });
+
+  try {
+    const { credentials } = await oauth2Client.refreshAccessToken();
+    return credentials.access_token || null;
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    return null;
+  }
+}
+
+// Get Gmail Client
 export async function getGmailClient(accessToken: string) {
   const oauth2Client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
@@ -13,6 +35,7 @@ export async function getGmailClient(accessToken: string) {
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
 
+// Search and Label Job Emails
 export async function searchAndLabelJobEmails(gmailClient: any) {
   const query = 'in:sent (subject:"Application" OR subject:"application" OR subject:"job" OR subject:"resume")';
   const label = await getOrCreateJobLabel(gmailClient);
@@ -31,7 +54,7 @@ export async function searchAndLabelJobEmails(gmailClient: any) {
       await gmailClient.users.messages.batchModify({
         userId: 'me',
         requestBody: {
-          ids: messages.map(m => m.id),
+          ids: messages.map((m: any) => m.id),
           addLabelIds: [label.id],
         },
       });
@@ -44,6 +67,7 @@ export async function searchAndLabelJobEmails(gmailClient: any) {
   return labeledCount;
 }
 
+// Fetch Job Emails
 export async function fetchJobEmails(gmailClient: any) {
   const label = await getOrCreateJobLabel(gmailClient);
   let pageToken;
@@ -68,9 +92,10 @@ export async function fetchJobEmails(gmailClient: any) {
   return emails;
 }
 
+// Helper to Get or Create Job Label
 async function getOrCreateJobLabel(gmailClient: any) {
   const res = await gmailClient.users.labels.list({ userId: 'me' });
-  let label = res.data.labels.find(l => l.name === JOB_LABEL_NAME);
+  let label = res.data.labels.find((l: any) => l.name === JOB_LABEL_NAME);
 
   if (!label) {
     const createRes = await gmailClient.users.labels.create({
@@ -83,6 +108,7 @@ async function getOrCreateJobLabel(gmailClient: any) {
   return label;
 }
 
+// Fetch Email Details
 async function fetchEmailDetails(gmailClient: any, messageId: string) {
   const message = await gmailClient.users.messages.get({
     userId: 'me',
@@ -91,9 +117,9 @@ async function fetchEmailDetails(gmailClient: any, messageId: string) {
   });
 
   const headers = message.data.payload.headers;
-  const subject = headers.find(h => h.name === 'Subject')?.value || '';
-  const from = headers.find(h => h.name === 'From')?.value || '';
-  const to = headers.find(h => h.name === 'To')?.value.split(',').map(e => e.trim()) || [];
+  const subject = headers.find((h: any) => h.name === 'Subject')?.value || '';
+  const from = headers.find((h: any) => h.name === 'From')?.value || '';
+  const to = headers.find((h: any) => h.name === 'To')?.value.split(',').map((e: string) => e.trim()) || [];
   const date = new Date(parseInt(message.data.internalDate));
 
   return {
@@ -110,6 +136,7 @@ async function fetchEmailDetails(gmailClient: any, messageId: string) {
   };
 }
 
+// Extract Email Body
 function extractBody(payload: any): string {
   if (payload.body.data) {
     return Buffer.from(payload.body.data, 'base64').toString('utf-8');

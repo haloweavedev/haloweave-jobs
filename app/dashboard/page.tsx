@@ -112,6 +112,7 @@ export default function Dashboard() {
         setJobRelatedEmails(0);
         setSentApplications(0);
         setReceivedResponses(0);
+        setSuccessMessage('Gmail disconnected successfully');
       } else {
         throw new Error('Failed to disconnect Gmail');
       }
@@ -175,8 +176,8 @@ export default function Dashboard() {
                   <Button onClick={handleSyncGmail} disabled={isLoading}>
                     {isLoading ? 'Syncing...' : 'Sync Gmail'}
                   </Button>
-                  <Button onClick={handleSyncGmail} disabled={isLoading} variant="outline">
-                    Refresh Email Data
+                  <Button onClick={handleDisconnectGmail} disabled={isLoading} variant="destructive">
+                    Disconnect Gmail
                   </Button>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';
-import { getGmailClient, searchAndLabelJobEmails, fetchJobEmails } from '@/lib/gmail-utils';
+import { getGmailClient, searchAndLabelJobEmails, fetchJobEmails, refreshAccessToken } from '@/lib/gmail-utils';
 
 const prisma = new PrismaClient();
 
@@ -17,12 +17,41 @@ export async function POST() {
       where: { clerkId: userId },
     });
 
-    if (!user || !user.gmailToken) {
+    if (!user || !user.gmailToken || !user.gmailRefreshToken) {
       return NextResponse.json({ error: 'Gmail not connected' }, { status: 400 });
     }
 
-    const gmail = await getGmailClient(user.gmailToken);
-    
+    let gmail;
+    try {
+      gmail = await getGmailClient(user.gmailToken);
+    } catch (error) {
+      if (error.message === 'Invalid Credentials') {
+        // Token expired, try to refresh
+        const newToken = await refreshAccessToken(user.gmailRefreshToken);
+        if (newToken) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { gmailToken: newToken },
+          });
+          gmail = await getGmailClient(newToken);
+        } else {
+          // If refresh fails, disconnect Gmail
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              gmailToken: null,
+              gmailRefreshToken: null,
+              gmailSynced: false,
+              lastSyncTime: null,
+            },
+          });
+          return NextResponse.json({ error: 'Gmail token expired and refresh failed. Please reconnect your account.' }, { status: 401 });
+        }
+      } else {
+        throw error;
+      }
+    }
+
     // Search and label job-related emails
     const labeledCount = await searchAndLabelJobEmails(gmail);
 
