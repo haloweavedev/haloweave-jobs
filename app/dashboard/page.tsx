@@ -260,6 +260,14 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+        {/* Chatbot */}
+        {emails.length > 0 && (
+            <Chatbot />
+        )}
+
+        {/* Resume Analyzer */}
+        <ResumeAnalyzer />
+
         {/* Application Status Breakdown */}
         <Card className="mb-8">
           <CardHeader>
@@ -280,14 +288,6 @@ export default function Dashboard() {
             ))}
           </CardContent>
         </Card>
-
-        {/* Chatbot */}
-        {emails.length > 0 && (
-            <Chatbot />
-        )}
-
-        {/* Resume Analyzer */}
-        <ResumeAnalyzer />
 
         {/* AI Assistant */}
         <Card className="mb-8">

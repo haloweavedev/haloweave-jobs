@@ -3,7 +3,6 @@
 import { getOpenAIClient } from '@/lib/openai-utils';
 import { PrismaClient } from '@prisma/client';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { createEmbedding, getNearestEmbeddings } from '@/lib/embedding-utils';
 
 const prisma = new PrismaClient();
 const openai = getOpenAIClient();

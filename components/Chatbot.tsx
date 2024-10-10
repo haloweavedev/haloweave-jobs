@@ -30,7 +30,7 @@ export default function Chatbot() {
   };
 
   return (
-    <Card className="mt-8">
+    <Card className="mb-8">
       <CardHeader>
         <CardTitle>AI Assistant</CardTitle>
       </CardHeader>
