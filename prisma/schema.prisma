@@ -19,6 +19,8 @@ model User {
   lastSyncTime      DateTime?
   emails            Email[]
   jobApplications   JobApplication[]
+  resumeText        String?          @db.Text // Field for storing plain text resumes
+  resumeAnalysis    Json?            // Field for storing structured JSON analysis
 }
 
 model Email {

@@ -1,9 +1,9 @@
-'use server'
+'use server';
 
 import OpenAI from "openai";
-import { PrismaClient, Prisma } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -51,55 +51,74 @@ export async function getResumeAnalysis(resumeText: string) {
   }
 }
 
-export async function saveResume(userId: string, resumeData: string) {
-    console.log('Attempting to save resume for user:', userId);
-    try {
-      console.log('Resume data length:', resumeData.length);
-      
-      // Try to find the user first
-      let user = await prisma.user.findUnique({
-        where: { clerkId: userId },
+export async function saveResume(userId: string, resumeText: string) {
+  console.log('Attempting to save resume for user:', userId);
+  try {
+    console.log('Resume data length:', resumeText.length);
+
+    // Fetch the email from Clerk (replace this placeholder with actual logic to fetch the email)
+    const email = 'placeholder@example.com';
+
+    // Try to find the user first
+    let user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    // If user doesn't exist, create them
+    if (!user) {
+      console.log('User not found. Creating new user.');
+      user = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: email,
+          resumeText: resumeText, // Save the resume as plain text
+        },
       });
-  
-      // If user doesn't exist, create them
-      if (!user) {
-        console.log('User not found. Creating new user.');
-        user = await prisma.user.create({
-          data: {
-            clerkId: userId,
-            email: 'placeholder@example.com', // You should replace this with the actual email from Clerk
-            resumeData: {
-              text: resumeData
-            }
-          },
-        });
-      } else {
-        // If user exists, update their resume data
-        user = await prisma.user.update({
-          where: { clerkId: userId },
-          data: { 
-            resumeData: {
-              text: resumeData
-            }
-          },
-        });
-      }
-  
-      console.log('Resume saved successfully for user:', userId);
-      return { message: 'Resume saved successfully' };
-    } catch (error) {
-      console.error('Error saving resume:', error);
-      if (error instanceof Error) {
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        console.error('Prisma error code:', error.code);
-        console.error('Prisma error meta:', error.meta);
-      }
-      throw new Error(`Failed to save resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      await prisma.$disconnect();
+    } else {
+      // If user exists, update their resume data
+      user = await prisma.user.update({
+        where: { clerkId: userId },
+        data: { 
+          resumeText: resumeText // Save the resume as plain text
+        },
+      });
     }
+
+    console.log('Resume saved successfully for user:', userId);
+    return { message: 'Resume saved successfully' };
+  } catch (error) {
+    console.error('Error saving resume:', error);
+    throw new Error(`Failed to save resume: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    await prisma.$disconnect();
   }
+}
+
+export async function saveAnalysis(userId: string, analysis: any) {
+  console.log('Attempting to save analysis for user:', userId);
+  try {
+    let user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    // Update user's analysis data
+    await prisma.user.update({
+      where: { clerkId: userId },
+      data: { 
+        resumeAnalysis: analysis // Save the analysis JSON directly
+      },
+    });
+
+    console.log('Analysis saved successfully for user:', userId);
+    return { message: 'Analysis saved successfully' };
+  } catch (error) {
+    console.error('Error saving analysis:', error);
+    throw new Error(`Failed to save analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    await prisma.$disconnect();
+  }
+}

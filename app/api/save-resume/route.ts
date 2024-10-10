@@ -1,22 +1,14 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { saveResume } from '@/app/actions';
 
 export async function POST(req: Request) {
-  const { userId, resumeData } = await req.json();
+  const { userId, resumeText } = await req.json();
 
   try {
-    await prisma.user.update({
-      where: { clerkId: userId },
-      data: { resumeData: { text: resumeData } },
-    });
-
-    return NextResponse.json({ message: 'Resume data saved successfully' });
+    const result = await saveResume(userId, resumeText);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error saving resume data:', error);
     return NextResponse.json({ error: 'Failed to save resume data' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
