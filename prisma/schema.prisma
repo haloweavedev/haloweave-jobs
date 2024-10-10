@@ -18,6 +18,8 @@ model User {
   resumeAnalysis Json?
   gmailToken     String?
   gmailSynced    Boolean  @default(false)
+  sentEmailCount Int      @default(0)
+  lastSyncTime   DateTime?
   jobApplications JobApplication[]
 }
 
