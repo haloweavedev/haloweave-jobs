@@ -7,7 +7,8 @@
     "noImplicitAny": false, // Allow implicit any types
     "strictNullChecks": false, // Disable strict null checks
     "noImplicitReturns": false, // Allow functions without explicit return types
-    "noEmit": true,
+    "noEmit": false,
+    "noEmitOnError": false,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
