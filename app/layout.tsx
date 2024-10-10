@@ -1,9 +1,14 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'] })
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'], // Choose weights based on your design requirements
+  style: ['normal', 'italic'],
+  variable: '--font-poppins', // Optional: for CSS variable use
+});
 
 export const metadata: Metadata = {
   title: 'Haloweave Jobs - AI-Powered Job Application Assistant',
@@ -17,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={inter.className}>
+      <html lang="en" className={poppins.className}>
         <body>{children}</body>
       </html>
     </ClerkProvider>
