@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { ChatCompletion, ChatCompletionChunk, Stream } from 'openai';
 
 export class OpenAIClient {
   private client: OpenAI;
@@ -7,9 +7,16 @@ export class OpenAIClient {
     this.client = new OpenAI({ apiKey });
   }
 
-  async createChatCompletion(params: OpenAI.Chat.ChatCompletionCreateParams): Promise<OpenAI.Chat.ChatCompletion> {
+  async createChatCompletion(params: OpenAI.Chat.ChatCompletionCreateParams): Promise<ChatCompletion | Stream<ChatCompletionChunk>> {
     try {
-      return await this.client.chat.completions.create(params);
+      const response = await this.client.chat.completions.create(params);
+
+      // Handle both streaming and regular responses
+      if ('choices' in response) {
+        return response as ChatCompletion;
+      } else {
+        return response as Stream<ChatCompletionChunk>;
+      }
     } catch (error) {
       console.error('Error creating chat completion:', error);
       throw new Error('Failed to create chat completion');
@@ -24,16 +31,6 @@ export class OpenAIClient {
       throw new Error('Failed to create embedding');
     }
   }
-
-  // You can add more methods here as needed, for example:
-  // async createImage(params: OpenAI.Image.ImageGenerateParams): Promise<OpenAI.Images.Image> {
-  //   try {
-  //     return await this.client.images.generate(params);
-  //   } catch (error) {
-  //     console.error('Error generating image:', error);
-  //     throw new Error('Failed to generate image');
-  //   }
-  // }
 }
 
 // Utility function to get an instance of OpenAIClient
