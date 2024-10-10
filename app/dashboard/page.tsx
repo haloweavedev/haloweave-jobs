@@ -9,6 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { Mail, Briefcase, User, Building } from "lucide-react";
 import Header from '@/components/Header';
 import ResumeAnalyzer from '@/components/ResumeAnalyzer';
+import Chatbot from '@/components/Chatbot';
+import { getEmails } from '@/app/actions';
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
@@ -18,6 +20,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [emails, setEmails] = useState([]);
   const [stats, setStats] = useState<any>({});
   const [labeledCount, setLabeledCount] = useState<number>(0);
   const [jobRelatedEmails, setJobRelatedEmails] = useState<number>(0);
@@ -28,6 +31,7 @@ export default function Dashboard() {
     if (isLoaded && user) {
       checkGmailStatus();
       fetchJobApplicationStats();
+      fetchEmails();
     }
 
     const errorParam = searchParams.get('error');
@@ -91,6 +95,7 @@ export default function Dashboard() {
         setSuccessMessage(`Successfully labeled ${data.labeledCount} emails and processed ${data.jobRelatedEmailsCount} job-related emails`);
         await checkGmailStatus();
         await fetchJobApplicationStats();
+        await fetchEmails(); // Add this line to fetch updated emails after syncing
       } else {
         throw new Error('Failed to sync Gmail');
       }
@@ -124,6 +129,21 @@ export default function Dashboard() {
     }
   };
 
+  // Add this new function to fetch emails
+  const fetchEmails = async () => {
+    setIsLoading(true);
+    try {
+      const fetchedEmails = await getEmails();
+      console.log('Fetched emails in component:', fetchedEmails);
+      setEmails(fetchedEmails);
+    } catch (err) {
+      console.error('Error fetching emails in component:', err);
+      setError('Failed to fetch emails');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const fetchJobApplicationStats = async () => {
     try {
       const response = await fetch('/api/job-applications/stats');
@@ -140,6 +160,8 @@ export default function Dashboard() {
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
+
+  console.log('Clerk User ID:', user?.id);
 
   return (
     <>
@@ -213,6 +235,31 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Emails Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Your Job-Related Emails</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <p>Loading emails...</p>
+            ) : emails.length > 0 ? (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {emails.map((email) => (
+                  <div key={email.id} className="border p-4 rounded">
+                    <h3 className="font-bold">{email.subject}</h3>
+                    <p>From: {email.from}</p>
+                    <p>Date: {new Date(email.sentDate).toLocaleString()}</p>
+                    <p className="truncate">{email.snippet}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No job-related emails found. Try syncing your Gmail account.</p>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Application Status Breakdown */}
         <Card className="mb-8">
           <CardHeader>
@@ -233,6 +280,18 @@ export default function Dashboard() {
             ))}
           </CardContent>
         </Card>
+
+        {/* Chatbot */}
+        {emails.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>AI Assistant</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <Chatbot />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Resume Analyzer */}
         <ResumeAnalyzer />
