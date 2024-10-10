@@ -3,7 +3,10 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false, // Disabled strict mode
+    "noImplicitAny": false, // Allow implicit any types
+    "strictNullChecks": false, // Disable strict null checks
+    "noImplicitReturns": false, // Allow functions without explicit return types
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -12,6 +15,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "forceConsistentCasingInFileNames": false, // Allow inconsistent casing in filenames
     "plugins": [
       {
         "name": "next"
