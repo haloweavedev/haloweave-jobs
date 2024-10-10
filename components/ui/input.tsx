@@ -1,15 +1,15 @@
 import React, { forwardRef, InputHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: string;
   variant?: 'default' | 'filled';
-  size?: 'sm' | 'md' | 'lg';
+  inputSize?: 'sm' | 'md' | 'lg'; // Renamed to inputSize
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, variant = 'default', size = 'md', type, ...props }, ref) => {
+  ({ className, label, error, variant = 'default', inputSize = 'md', type, ...props }, ref) => {
     const variants = {
       default: 'bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500',
       filled: 'bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-blue-500',
@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             'w-full rounded-md shadow-sm transition duration-150 ease-in-out',
             'focus:outline-none focus:ring-2 focus:ring-opacity-50',
             variants[variant],
-            sizes[size],
+            sizes[inputSize], // Use inputSize here
             error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
             className
           )}
