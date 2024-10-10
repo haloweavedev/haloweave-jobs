@@ -7,4 +7,4 @@ set -e
 npx prisma migrate deploy
 
 # Build the Next.js application
-npx next build
+npx prisma generate && next build
