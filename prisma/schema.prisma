@@ -16,6 +16,8 @@ model User {
   updatedAt      DateTime @updatedAt
   resumeData     Json?
   resumeAnalysis Json?
+  gmailToken     String?
+  gmailSynced    Boolean  @default(false)
   jobApplications JobApplication[]
 }
 
