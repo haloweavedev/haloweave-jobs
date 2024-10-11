@@ -6,5 +6,8 @@ set -e
 # Apply database migrations
 npx prisma migrate deploy
 
+# Generate Prisma Client
+npx prisma generate
+
 # Build the Next.js application
-npx prisma generate && next build
+next build
