@@ -9,13 +9,27 @@ export class OpenAIClient {
 
   async createChatCompletion(params: OpenAI.Chat.ChatCompletionCreateParams): Promise<OpenAI.Chat.ChatCompletion> {
     try {
-      return await this.client.chat.completions.create(params);
+      const chatCompletion = await this.client.chat.completions.create(params);
+      return chatCompletion;
     } catch (error) {
       console.error('Error creating chat completion:', error);
       throw new Error('Failed to create chat completion');
     }
   }
 
+  async createChatCompletionStream(params: OpenAI.Chat.ChatCompletionCreateParams) {
+    try {
+      const stream = await this.client.chat.completions.create({
+        ...params,
+        stream: true,
+      });
+
+      return stream;
+    } catch (error) {
+      console.error('Error creating chat completion stream:', error);
+      throw new Error('Failed to create chat completion stream');
+    }
+  }
 }
 
 // Utility function to get an instance of OpenAIClient
