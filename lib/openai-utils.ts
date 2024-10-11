@@ -9,8 +9,13 @@ export class OpenAIClient {
 
   async createChatCompletion(params: OpenAI.Chat.ChatCompletionCreateParams): Promise<OpenAI.Chat.ChatCompletion> {
     try {
-      const chatCompletion = await this.client.chat.completions.create(params);
-      return chatCompletion;
+      const response = await this.client.chat.completions.create(params);
+      
+      if (this.isStreamResponse(response)) {
+        throw new Error('Streaming response received. Use createChatCompletionStream for streaming.');
+      }
+      
+      return response;
     } catch (error) {
       console.error('Error creating chat completion:', error);
       throw new Error('Failed to create chat completion');
@@ -29,6 +34,10 @@ export class OpenAIClient {
       console.error('Error creating chat completion stream:', error);
       throw new Error('Failed to create chat completion stream');
     }
+  }
+
+  private isStreamResponse(response: any): response is AsyncIterable<OpenAI.Chat.ChatCompletionChunk> {
+    return typeof response[Symbol.asyncIterator] === 'function';
   }
 }
 

@@ -182,8 +182,6 @@ export async function getChatResponse(input: string) {
       Content: ${email.snippet}
     `).join('\n\n');
 
-    console.log('Email context (first 500 characters):', emailContext.substring(0, 500));
-
     console.log('Sending request to OpenAI');
     const completion = await openai.createChatCompletion({
       model: 'gpt-4o-mini',
@@ -210,6 +208,9 @@ export async function getChatResponse(input: string) {
     return completion.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
   } catch (error) {
     console.error('Error in getChatResponse:', error);
+    if (error instanceof Error && error.message.includes('Streaming response received')) {
+      throw new Error('Streaming responses are not supported in this context. Please update your OpenAI client configuration.');
+    }
     throw new Error(`Failed to get chat response: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
