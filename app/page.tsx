@@ -1,24 +1,44 @@
-'use client';
+"use client";
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect, ReactNode } from 'react'
 import { SignInButton, SignUpButton, UserButton, useAuth } from '@clerk/nextjs'
-import { initSmoothScroll } from '../utils/smoothScroll'
-import { initAnimations } from '../utils/animations'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ArrowRight, CheckCircle, Mail, MessageSquare, Menu, X } from 'lucide-react'
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isSignedIn } = useAuth();
+  const [activeTab, setActiveTab] = useState('professionals')
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
-    initSmoothScroll();
-    initAnimations();
-  }, []);
+    if (isMenuOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+
+    return () => {
+      document.body.classList.remove('menu-open');
+    };
+  }, [isMenuOpen]);
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+
+  const NavItems = () => (
+    <>
+      <Link href="#features" className="block py-2 text-lg hover:text-primary transition-colors">Features</Link>
+      <Link href="#how-it-works" className="block py-2 text-lg hover:text-primary transition-colors">How It Works</Link>
+      <Link href="#pricing" className="block py-2 text-lg hover:text-primary transition-colors">Pricing</Link>
+    </>
+  )
 
   return (
-    <div className="min-h-screen bg-white font-poppins">
-      <header className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50 transition-all duration-300">
+    <div className="min-h-screen bg-background font-sans">
+      <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-sm z-50 border-b">
         <nav className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Image
@@ -27,80 +47,89 @@ export default function Home() {
               width={120}
               height={40}
             />
-            <div className="hidden md:flex space-x-8">
-              <NavLink href="#features">Features</NavLink>
-              <NavLink href="#how-it-works">How It Works</NavLink>
-              <NavLink href="#pricing">Pricing</NavLink>
-              <NavLink href="#contact">Contact</NavLink>
-            </div>
-            <div className="hidden md:flex space-x-4 items-center">
+            <div className="hidden md:flex space-x-8 items-center">
+              <NavItems />
               {isSignedIn ? (
                 <>
-                  <Link href="/dashboard" className="text-gray-600 hover:text-primary transition duration-300">Dashboard</Link>
+                  <Link href="/dashboard" className="text-muted-foreground hover:text-primary transition">Dashboard</Link>
                   <UserButton afterSignOutUrl="/" />
                 </>
               ) : (
                 <>
                   <SignInButton mode="modal">
-                    <button className="text-gray-600 hover:text-primary transition duration-300">Login</button>
+                    <Button variant="ghost">Login</Button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300">Sign Up</button>
+                    <Button>Sign Up</Button>
                   </SignUpButton>
                 </>
               )}
             </div>
-            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+            <button className="md:hidden text-foreground" onClick={toggleMenu}>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
-          {isMenuOpen && (
-            <div className="md:hidden mt-4">
-              <NavLink href="#features">Features</NavLink>
-              <NavLink href="#how-it-works">How It Works</NavLink>
-              <NavLink href="#pricing">Pricing</NavLink>
-              <NavLink href="#contact">Contact</NavLink>
-              <div className="mt-4 space-y-2">
-                {isSignedIn ? (
-                  <>
-                    <Link href="/dashboard" className="block text-gray-600 hover:text-primary transition duration-300">Dashboard</Link>
-                    <UserButton afterSignOutUrl="/" />
-                  </>
-                ) : (
-                  <>
-                    <SignInButton mode="modal">
-                      <button className="block text-gray-600 hover:text-primary transition duration-300">Login</button>
-                    </SignInButton>
-                    <SignUpButton mode="modal">
-                      <button className="block bg-primary text-white px-4 py-2 rounded-full hover:bg-blue-700 transition duration-300 text-center">Sign Up</button>
-                    </SignUpButton>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
         </nav>
       </header>
 
+      {/* Mobile Navigation Menu */}
+      <div className={`fixed inset-y-0 right-0 w-64 bg-background shadow-lg transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out z-50 md:hidden`}>
+        <div className="flex flex-col h-full justify-between p-6">
+          <div>
+            <button className="mb-8 text-foreground" onClick={toggleMenu}>
+              <X size={24} />
+            </button>
+            <nav className="space-y-4">
+              <NavItems />
+            </nav>
+          </div>
+          <div className="space-y-4">
+            {isSignedIn ? (
+              <>
+              <UserButton afterSignOutUrl="/"/>
+                <Link href="/dashboard" className="block w-full">
+                  <Button variant="outline" className="w-full">Dashboard</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <SignInButton mode="modal">
+                  <Button variant="outline" className="w-full">Login</Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button className="w-full">Sign Up</Button>
+                </SignUpButton>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-blue-50 to-white py-20 pt-[10rem]">
+        <section className="bg-gradient-to-r from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 py-20 pt-32">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center gap-[30px]">
-              <div className="md:w-1/2 mb-8 md:mb-0">
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Simplify Your Job Search with AI-Powered Precision</h1>
-                <p className="text-xl text-gray-600 mb-8">Your personal job assistant that analyzes your resume, organizes your emails, and finds tailored opportunities.</p>
+            <div className="flex flex-col md:flex-row items-center gap-12">
+              <div className="md:w-1/2">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                  Simplify Your Job Search with AI-Powered Precision
+                </h1>
+                <p className="text-xl text-muted-foreground mb-8">
+                  Your personal job assistant that analyzes your resume, organizes your emails, and finds tailored opportunities.
+                </p>
                 <div className="flex space-x-4">
                   {isSignedIn ? (
-                    <Link href="/dashboard" className="bg-primary text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">Go to Dashboard</Link>
+                    <Button asChild size="lg">
+                      <Link href="/dashboard">Go to Dashboard</Link>
+                    </Button>
                   ) : (
                     <SignUpButton mode="modal">
-                      <button className="bg-primary text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">Start Your Free Trial</button>
+                      <Button size="lg">Start Your Free Trial</Button>
                     </SignUpButton>
                   )}
-                  <Link href="#how-it-works" className="border border-primary text-primary px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50 transition">Learn More</Link>
+                  <Button asChild variant="outline" size="lg">
+                    <Link href="#how-it-works">Learn More</Link>
+                  </Button>
                 </div>
               </div>
               <div className="md:w-1/2">
@@ -121,133 +150,148 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-12">How Haloweave Jobs Empowers Your Job Hunt</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <StepCard
-                number={1}
-                title="AI Resume Analysis"
-                description="Upload your resume, and our AI evaluates your skills, experience, and preferences to suggest the best job opportunities."
-              />
-              <StepCard
-                number={2}
-                title="Seamless Gmail Integration"
-                description="We automatically categorize job-related emails and responses, labeling follow-ups, interviews, and more for you."
-              />
-              <StepCard
-                number={3}
-                title="Natural Language Interaction"
-                description="Use conversational AI to ask questions like, 'What's the status of my Google application?' or 'Show me upcoming interviews.'"
-              />
+              {[
+                {
+                  title: "AI Resume Analysis",
+                  description: "Upload your resume, and our AI evaluates your skills, experience, and preferences to suggest the best job opportunities.",
+                  icon: <CheckCircle className="h-12 w-12 text-primary" />
+                },
+                {
+                  title: "Seamless Gmail Integration",
+                  description: "We automatically categorize job-related emails and responses, labeling follow-ups, interviews, and more for you.",
+                  icon: <Mail className="h-12 w-12 text-primary" />
+                },
+                {
+                  title: "Natural Language Interaction",
+                  description: "Use conversational AI to ask questions like, 'What's the status of my Google application?' or 'Show me upcoming interviews.'",
+                  icon: <MessageSquare className="h-12 w-12 text-primary" />
+                }
+              ].map((step, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-4">
+                      {step.icon}
+                      <span>{step.title}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{step.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section id="features" className="bg-blue-50 py-20">
+        <section id="features" className="bg-gray-50 dark:bg-gray-900 py-20">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">AI-Powered Features Tailored for Professionals</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <FeatureCard
-                title="Resume Analysis"
-                description="Tailored job suggestions based on your skills and career goals."
-                icon="🎯"
-              />
-              <FeatureCard
-                title="Email Organization"
-                description="Never lose track of an application again with auto-categorization and labels."
-                icon="📨"
-              />
-              <FeatureCard
-                title="Conversational Assistant"
-                description="Ask questions about your job search, and get real-time answers from our custom AI."
-                icon="💬"
-              />
-              <FeatureCard
-                title="Real-Time Notifications"
-                description="Get notified instantly when there's a job-related email or follow-up."
-                icon="🔔"
-              />
-              <FeatureCard
-                title="Intuitive Dashboard"
-                description="Manage all your job applications, emails, and tasks from one sleek interface."
-                icon="📊"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Why Choose Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Why Choose Haloweave Jobs?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <ReasonCard
-                title="Increase Callback Rates"
-                description="With our AI's precision job matching, you'll apply for jobs that truly fit your profile."
-              />
-              <ReasonCard
-                title="Efficiency"
-                description="Spend less time sifting through emails and applications, and focus on what matters—your career."
-              />
-              <ReasonCard
-                title="Personalized Assistance"
-                description="It's like having a dedicated job assistant available 24/7."
-              />
-              <ReasonCard
-                title="Scalable Solution"
-                description="Whether you're managing one application or 100, Haloweave Jobs adapts effortlessly."
-              />
-            </div>
+            <h2 className="text-3xl font-bold text-center mb-12">AI-Powered Features Tailored for You</h2>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-8xl mx-auto">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="professionals">For Professionals</TabsTrigger>
+                <TabsTrigger value="employers">For Employers</TabsTrigger>
+              </TabsList>
+              <TabsContent value="professionals">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-8">
+                  {[
+                    { title: "Resume Analysis", description: "Get tailored job suggestions based on your skills and career goals." },
+                    { title: "Email Organization", description: "Never lose track of an application again with auto-categorization and labels." },
+                    { title: "Conversational Assistant", description: "Ask questions about your job search and get real-time answers from our custom AI." },
+                    { title: "Application Tracking", description: "Keep all your job applications organized in one intuitive dashboard." },
+                  ].map((feature, index) => (
+                    <Card key={index}>
+                      <CardHeader>
+                        <CardTitle>{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground">{feature.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="employers">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-8">
+                  {[
+                    { title: "AI-Powered Candidate Matching", description: "Find the perfect candidates for your open positions using our advanced AI algorithms." },
+                    { title: "Automated Screening", description: "Save time with AI-assisted initial candidate screening and shortlisting." },
+                    { title: "Interview Scheduling", description: "Streamline your hiring process with our integrated interview scheduling system." },
+                    { title: "Analytics Dashboard", description: "Gain insights into your hiring pipeline with comprehensive analytics and reporting." },
+                  ].map((feature, index) => (
+                    <Card key={index}>
+                      <CardHeader>
+                        <CardTitle>{feature.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground">{feature.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="bg-primary text-white py-20">
+        <section className="bg-primary text-primary-foreground py-20">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">Take Control of Your Job Search Today</h2>
-            <p className="text-xl mb-8">Join thousands of professionals using Haloweave Jobs to streamline their job application process.</p>
+            <p className="text-xl mb-8 max-w-2xl mx-auto">
+              Join thousands of professionals using Haloweave Jobs to streamline their job application process and land their dream roles faster.
+            </p>
             <div className="flex justify-center space-x-4">
-              <Link href="/signup" className="bg-white text-primary px-6 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition">Get Started Now</Link>
-              <Link href="/demo" className="border border-white text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-600 transition">Book a Demo</Link>
+              <SignUpButton mode="modal">
+                <Button size="lg" variant="secondary">
+                  Start Your Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </SignUpButton>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/demo">Book a Demo</Link>
+              </Button>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="bg-gray-800 text-white py-12">
+      <footer className="bg-gray-900 text-gray-300 py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/about" className="hover:text-blue-300">About Us</Link></li>
-                <li><Link href="/features" className="hover:text-blue-300">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-blue-300">Pricing</Link></li>
+                <li><Link href="/about" className="hover:text-white transition">About Us</Link></li>
+                <li><Link href="/features" className="hover:text-white transition">Features</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Resources</h3>
               <ul className="space-y-2">
-                <li><Link href="/blog" className="hover:text-blue-300">Blog</Link></li>
-                <li><Link href="/support" className="hover:text-blue-300">Support</Link></li>
-                <li><Link href="/contact" className="hover:text-blue-300">Contact Us</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
+                <li><Link href="/support" className="hover:text-white transition">Support</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition">Contact Us</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
-                <li><Link href="/terms" className="hover:text-blue-300">Terms of Service</Link></li>
-                <li><Link href="/privacy" className="hover:text-blue-300">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Connect</h3>
               <div className="flex space-x-4">
-                <a href="#" className="text-2xl hover:text-blue-300">
+                <a href="#" className="text-2xl hover:text-white transition">
                   <i className="fab fa-linkedin"></i>
                 </a>
-                <a href="#" className="text-2xl hover:text-blue-300">
+                <a href="#" className="text-2xl hover:text-white transition">
                   <i className="fab fa-twitter"></i>
                 </a>
-                <a href="#" className="text-2xl hover:text-blue-300">
+                <a href="#" className="text-2xl hover:text-white transition">
                   <i className="fab fa-facebook"></i>
                 </a>
               </div>
@@ -258,65 +302,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-interface NavLinkProps {
-  href: string;
-  children: ReactNode;
-}
-
-function NavLink({ href, children }: NavLinkProps) {
-  return (
-    <Link href={href} className="text-gray-600 hover:text-primary">{children}</Link>
-  )
-}
-
-interface StepCardProps {
-  number: number;
-  title: string;
-  description: string;
-}
-
-function StepCard({ number, title, description }: StepCardProps) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="bg-primary text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mb-4">
-        {number}
-      </div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </div>
-  )
-}
-
-interface FeatureCardProps {
-  title: string;
-  description: string;
-  icon: string;
-}
-
-function FeatureCard({ title, description, icon }: FeatureCardProps) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="text-4xl mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </div>
-  )
-}
-
-interface ReasonCardProps {
-  title: string;
-  description: string;
-}
-
-function ReasonCard({ title, description }: ReasonCardProps) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
     </div>
   )
 }
