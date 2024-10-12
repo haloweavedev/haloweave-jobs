@@ -195,10 +195,10 @@ export default function Dashboard() {
                 <p className="mb-2">Sent job applications: {sentApplications}</p>
                 <p className="mb-4">Received responses: {receivedResponses}</p>
                 <div className="flex space-x-4">
-                  <Button onClick={handleSyncGmail} disabled={isLoading}>
+                  <Button onClick={handleSyncGmail} disabled={isLoading} className="hover:bg-black">
                     {isLoading ? 'Syncing...' : 'Sync Gmail'}
                   </Button>
-                  <Button onClick={handleDisconnectGmail} disabled={isLoading} variant="destructive">
+                  <Button onClick={handleDisconnectGmail} disabled={isLoading} variant="destructive" className="hover:bg-black">
                     Disconnect Gmail
                   </Button>
                 </div>
@@ -286,28 +286,6 @@ export default function Dashboard() {
                 />
               </div>
             ))}
-          </CardContent>
-        </Card>
-
-        {/* AI Assistant */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>AI Assistant</CardTitle>
-            <CardDescription>Chat with your personal job search assistant</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Our AI-powered chatbot is coming soon to help you with your job search!</p>
-          </CardContent>
-        </Card>
-
-        {/* Suggested Jobs */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Suggested Jobs</CardTitle>
-            <CardDescription>Personalized job recommendations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">We are working on integrating job recommendations from Adzuna. Stay tuned!</p>
           </CardContent>
         </Card>
       </div>
