@@ -154,8 +154,9 @@ function extractBody(payload: any): string {
 }
 
 // Search and Label Job Alerts
+// Search and Label Job Alerts
 export async function searchAndLabelJobAlerts(gmailClient: any) {
-  const query = 'subject:"LinkedIn Job Alerts"';
+  const query = 'from:jobalerts-noreply@linkedin.com';
   const label = await getOrCreateJobAlertsLabel(gmailClient);
   let pageToken;
   let labeledCount = 0;
