@@ -72,25 +72,12 @@ export async function GET() {
 }
 
 function parseJobsFromEmail(emailBody: string): Job[] {
-  debugLog('Parsing email body');
-  const lines = emailBody.split('\n');
   const jobs: Job[] = [];
+  const lines = emailBody.split('\n');
   let currentJob: Partial<Job> = {};
-  let isParsingJobs = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    
-    if (line === '13 new jobs in') {
-      isParsingJobs = true;
-      continue;
-    }
-
-    if (!isParsingJobs) continue;
-
-    if (line === 'See all jobs') {
-      break; // End of job listings
-    }
 
     if (line.startsWith('[image:')) {
       // New job listing starts
@@ -108,8 +95,6 @@ function parseJobsFromEmail(emailBody: string): Job[] {
       currentJob.jobType = jobType;
     } else if (line.startsWith('$') || line.includes('/year')) {
       currentJob.salary = line;
-    } else if (line === 'Actively recruiting' || line === 'Easy Apply') {
-      currentJob.additionalInfo = (currentJob.additionalInfo || '') + ' ' + line.trim();
     }
 
     // If we've collected all necessary information, add the job to the list
@@ -119,7 +104,6 @@ function parseJobsFromEmail(emailBody: string): Job[] {
     }
   }
 
-  debugLog(`Parsed ${jobs.length} valid jobs`, jobs);
   return jobs;
 }
 
