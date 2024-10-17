@@ -10,6 +10,8 @@ import { Mail, Briefcase, User, Building } from "lucide-react";
 import Header from '@/components/Header';
 import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 import Chatbot from '@/components/Chatbot';
+import SentEmailsSync from '@/components/SentEmailsSync';
+import JobAlertsSync from '@/components/JobAlertsSync';
 import { getEmails } from '@/app/actions';
 
 export default function Dashboard() {
@@ -85,7 +87,7 @@ export default function Dashboard() {
   const handleSyncGmail = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/gmail/sync', { method: 'POST' });
+      const response = await fetch('/api/gmail/sync-sent-emails', { method: 'POST' });
       if (response.ok) {
         const data = await response.json();
         setLabeledCount(data.labeledCount);
@@ -210,6 +212,14 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Two-column grid for Sent Emails and Job Alerts */}
+        {isGmailConnected && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <SentEmailsSync />
+            <JobAlertsSync />
+          </div>
+        )}
         
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

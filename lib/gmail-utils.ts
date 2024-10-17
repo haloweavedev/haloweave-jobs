@@ -152,3 +152,77 @@ function extractBody(payload: any): string {
 
   return '';
 }
+
+// Search and Label Job Alerts
+export async function searchAndLabelJobAlerts(gmailClient: any) {
+  const query = 'subject:"LinkedIn Job Alerts"';
+  const label = await getOrCreateJobAlertsLabel(gmailClient);
+  let pageToken;
+  let labeledCount = 0;
+
+  do {
+    const response = await gmailClient.users.messages.list({
+      userId: 'me',
+      q: query,
+      pageToken: pageToken,
+    });
+
+    const messages = response.data.messages || [];
+    if (messages.length > 0) {
+      await gmailClient.users.messages.batchModify({
+        userId: 'me',
+        requestBody: {
+          ids: messages.map((m: any) => m.id),
+          addLabelIds: [label.id],
+        },
+      });
+      labeledCount += messages.length;
+    }
+
+    pageToken = response.data.nextPageToken;
+  } while (pageToken);
+
+  return labeledCount;
+}
+
+// Fetch Job Alerts
+export async function fetchJobAlerts(gmailClient: any) {
+  const label = await getOrCreateJobAlertsLabel(gmailClient);
+  let pageToken;
+  const jobAlerts = [];
+
+  do {
+    const response = await gmailClient.users.messages.list({
+      userId: 'me',
+      labelIds: [label.id],
+      pageToken: pageToken,
+    });
+
+    const messages = response.data.messages || [];
+    for (const message of messages) {
+      const jobAlert = await fetchEmailDetails(gmailClient, message.id);
+      jobAlerts.push(jobAlert);
+    }
+
+    pageToken = response.data.nextPageToken;
+  } while (pageToken);
+
+  return jobAlerts;
+}
+
+// Helper to Get or Create Job Alerts Label
+async function getOrCreateJobAlertsLabel(gmailClient: any) {
+  const JOB_ALERTS_LABEL_NAME = 'LinkedIn Job Alerts';
+  const res = await gmailClient.users.labels.list({ userId: 'me' });
+  let label = res.data.labels.find((l: any) => l.name === JOB_ALERTS_LABEL_NAME);
+
+  if (!label) {
+    const createRes = await gmailClient.users.labels.create({
+      userId: 'me',
+      requestBody: { name: JOB_ALERTS_LABEL_NAME },
+    });
+    label = createRes.data;
+  }
+
+  return label;
+}

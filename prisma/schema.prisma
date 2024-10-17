@@ -20,6 +20,7 @@ model User {
   lastSyncTime      DateTime?
   emails            Email[]
   jobApplications   JobApplication[]
+  jobAlerts     JobAlert[]
   resumeText        String?          @db.Text // Field for storing plain text resumes
   resumeAnalysis    Json?            // Field for storing structured JSON analysis
 }
@@ -54,6 +55,19 @@ model JobApplication {
   updatedAt        DateTime          @updatedAt
   user             User              @relation(fields: [userId], references: [id])
   email            Email             @relation(fields: [emailId], references: [id])
+}
+
+model JobAlert {
+  id            String   @id @default(cuid())
+  userId        String
+  messageId     String   @unique
+  threadId      String
+  from          String
+  subject       String
+  snippet       String
+  body          String   @db.Text
+  receivedDate  DateTime
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 enum ApplicationStatus {
