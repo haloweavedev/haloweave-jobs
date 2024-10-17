@@ -62,10 +62,29 @@ export async function POST() {
       // Store or update job alert in the database
       await prisma.jobAlert.upsert({
         where: { messageId: alert.messageId },
-        update: alert,
+        update: {
+          threadId: alert.threadId,
+          from: alert.from,
+          toRecipients: alert.to, // Use 'toRecipients' instead of 'to'
+          subject: alert.subject,
+          snippet: alert.snippet,
+          body: alert.body,
+          sentDate: alert.sentDate,
+          receivedDate: alert.receivedDate,
+          labels: alert.labels,
+        },
         create: {
-          ...alert,
           userId: user.id,
+          messageId: alert.messageId,
+          threadId: alert.threadId,
+          from: alert.from,
+          toRecipients: alert.to, // Use 'toRecipients' instead of 'to'
+          subject: alert.subject,
+          snippet: alert.snippet,
+          body: alert.body,
+          sentDate: alert.sentDate,
+          receivedDate: alert.receivedDate,
+          labels: alert.labels,
         },
       });
     }

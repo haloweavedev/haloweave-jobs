@@ -127,7 +127,7 @@ async function fetchEmailDetails(gmailClient: any, messageId: string) {
     threadId: message.data.threadId,
     subject,
     from,
-    to,
+    to, // This will be used as 'toRecipients' in the JobAlert model
     snippet: message.data.snippet,
     body: extractBody(message.data.payload),
     sentDate: date,
@@ -153,7 +153,6 @@ function extractBody(payload: any): string {
   return '';
 }
 
-// Search and Label Job Alerts
 // Search and Label Job Alerts
 export async function searchAndLabelJobAlerts(gmailClient: any) {
   const query = 'from:jobalerts-noreply@linkedin.com';

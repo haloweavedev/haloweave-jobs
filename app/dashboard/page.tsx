@@ -12,6 +12,7 @@ import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 import Chatbot from '@/components/Chatbot';
 import SentEmailsSync from '@/components/SentEmailsSync';
 import JobAlertsSync from '@/components/JobAlertsSync';
+import JobAlertsList from '@/components/JobAlertsList';
 import { getEmails } from '@/app/actions';
 
 export default function Dashboard() {
@@ -269,6 +270,9 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Job Alerts Section */}
+        <JobAlertsList />
 
         {/* Chatbot */}
         {emails.length > 0 && (

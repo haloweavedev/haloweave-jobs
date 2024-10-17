@@ -9,8 +9,8 @@ datasource db {
 }
 
 model User {
-  id                String           @id @default(cuid())
-  clerkId           String           @unique
+  id       String     @id
+  clerkId  String     @unique
   email             String           @unique
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -20,9 +20,9 @@ model User {
   lastSyncTime      DateTime?
   emails            Email[]
   jobApplications   JobApplication[]
-  jobAlerts     JobAlert[]
-  resumeText        String?          @db.Text // Field for storing plain text resumes
-  resumeAnalysis    Json?            // Field for storing structured JSON analysis
+  jobAlerts         JobAlert[]
+  resumeText        String?          @db.Text
+  resumeAnalysis    Json?
 }
 
 model Email {
@@ -63,10 +63,13 @@ model JobAlert {
   messageId     String   @unique
   threadId      String
   from          String
+  toRecipients  String[]
   subject       String
   snippet       String
   body          String   @db.Text
+  sentDate      DateTime
   receivedDate  DateTime
+  labels        String[]
   user          User     @relation(fields: [userId], references: [id])
 }
 

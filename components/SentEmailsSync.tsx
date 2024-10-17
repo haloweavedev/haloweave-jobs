@@ -11,7 +11,7 @@ export default function SentEmailsSync() {
   const handleSync = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/gmail/sync', { method: 'POST' });
+      const response = await fetch('/api/gmail/sync-sent-emails', { method: 'POST' });
       if (response.ok) {
         const data = await response.json();
         setSyncedCount(data.labeledCount);
