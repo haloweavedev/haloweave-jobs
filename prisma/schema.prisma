@@ -9,8 +9,8 @@ datasource db {
 }
 
 model User {
-  id       String     @id
-  clerkId  String     @unique
+  id                String           @id @default(cuid())
+  clerkId           String           @unique
   email             String           @unique
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
