@@ -43,12 +43,16 @@ export async function GET() {
 
     console.log(`Found ${latestJobAlerts.length} job alerts`);
 
-    const parsedAlerts = latestJobAlerts.map((alert) => ({
-      date: alert.receivedDate.toLocaleDateString(),
-      jobs: parseJobsFromEmail(alert.body),
-    }));
+    const parsedAlerts = latestJobAlerts.map((alert) => {
+      const jobs = parseJobsFromEmail(alert.body);
+      console.log(`Parsed jobs for alert dated ${alert.receivedDate}:`, jobs);
+      return {
+        date: alert.receivedDate.toLocaleDateString(),
+        jobs,
+      };
+    });
 
-    console.log('Parsed alerts:', JSON.stringify(parsedAlerts, null, 2));
+    console.log('Final parsed alerts:', JSON.stringify(parsedAlerts, null, 2));
 
     return NextResponse.json(parsedAlerts);
   } catch (error) {
@@ -61,54 +65,89 @@ export async function GET() {
 
 function parseJobsFromEmail(emailBody: string): Job[] {
   const jobs: Job[] = [];
-  const lines = emailBody.split('\n');
+  const lines = emailBody
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
   let currentJob: Partial<Job> = {};
+  let isParsingJobs = false;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const line = lines[i];
 
-    if (line.startsWith('[image:')) {
-      if (Object.keys(currentJob).length > 0) {
-        jobs.push(currentJob as Job);
-      }
-      currentJob = {
-        companyName: line.replace('[image:', '').replace(']', '').trim(),
-        companyLogoURL: '',
-        ifEasyApply: false,
-      };
-    } else if (line.startsWith('https://www.linkedin.com/comm/jobs/view/')) {
-      currentJob.applyLink = line;
-      currentJob.companyLogoURL = line; // Using applyLink as companyLogoURL for now
-    } else if (!currentJob.jobTitle && line.length > 0 && !line.startsWith('https://')) {
-      currentJob.jobTitle = line;
-    } else if (line.includes('·')) {
-      const [location, jobType] = line.split('·').map(s => s.trim());
-      currentJob.location = location;
-      currentJob.jobType = extractJobType(jobType);
-    } else if (line.toLowerCase().includes('easy apply')) {
-      currentJob.ifEasyApply = true;
+    // Start parsing when we find the line indicating new jobs
+    if (!isParsingJobs && line.includes('match your preferences.')) {
+      isParsingJobs = true;
+      continue;
     }
 
-    if (currentJob.jobTitle && currentJob.companyName && currentJob.applyLink && 
-        currentJob.location && currentJob.jobType && 
-        !jobs.find(job => job.applyLink === currentJob.applyLink)) {
-      jobs.push(currentJob as Job);
-      currentJob = {};
+    if (!isParsingJobs) continue;
+
+    // Stop parsing when we reach the end of the job listings
+    if (line === 'See all jobs' || line.startsWith('------------------------------')) {
+      // Add the last job if it has required fields
+      if (currentJob.companyName && currentJob.jobTitle && currentJob.applyLink) {
+        jobs.push(currentJob as Job);
+      }
+      break;
+    }
+
+    // Check for company image line
+    if (line.startsWith('[image:')) {
+      const companyName = line.replace('[image:', '').replace(']', '').trim();
+
+      // Skip non-company images
+      if (
+        ['Easy Apply', 'The George Washington University', 'LinkedIn', 'Download on the App Store', 'Get it on Google Play'].includes(companyName)
+      ) {
+        continue;
+      }
+
+      // Save the previous job if it has required fields
+      if (currentJob.companyName && currentJob.jobTitle && currentJob.applyLink) {
+        jobs.push(currentJob as Job);
+        currentJob = {};
+      }
+
+      currentJob.companyName = companyName;
+      currentJob.companyLogoURL = ''; // Update this if you can extract the logo URL
+      currentJob.ifEasyApply = false;
+    }
+    // Check for the job apply link
+    else if (line.startsWith('<https://www.linkedin.com/comm/jobs/view/')) {
+      currentJob.applyLink = line.slice(1, -1); // Remove the angle brackets
+    }
+    // Check for job title
+    else if (!currentJob.jobTitle && !line.startsWith('https://') && !line.startsWith('Actively recruiting') && !line.startsWith('Easy Apply')) {
+      currentJob.jobTitle = line;
+    }
+    // Check for location and job type
+    else if (currentJob.companyName && line.startsWith(currentJob.companyName + ' ·')) {
+      const parts = line.split('·').map(s => s.trim());
+      if (parts.length >= 2) {
+        currentJob.location = parts[1];
+        currentJob.jobType = parts[2] || '';
+      }
+    }
+    // Check for Easy Apply tag
+    else if (line.toLowerCase().includes('easy apply')) {
+      currentJob.ifEasyApply = true;
     }
   }
 
+  // Add the last job if it has required fields
+  if (currentJob.companyName && currentJob.jobTitle && currentJob.applyLink) {
+    jobs.push(currentJob as Job);
+  }
+
   console.log(`Parsed ${jobs.length} jobs`);
-  console.log('First job:', JSON.stringify(jobs[0], null, 2));
+  if (jobs.length > 0) {
+    console.log('First job:', JSON.stringify(jobs[0], null, 2));
+  }
 
   return jobs;
 }
 
-function extractJobType(jobTypeString: string): string {
-  if (jobTypeString.includes('Remote')) return 'Remote';
-  if (jobTypeString.includes('Hybrid')) return 'Hybrid';
-  if (jobTypeString.includes('On-site')) return 'On-site';
-  return 'Not specified';
-}
 
 export const config = {
   runtime: 'edge',

@@ -101,24 +101,23 @@ export default function JobAlertsList() {
 }
 
 function JobCard({ job }: { job: Job }) {
-    return (
-      <Card className="flex flex-col h-full hover:shadow-lg transition-all duration-300 group overflow-hidden">
-        <CardContent className="p-4 flex flex-col justify-center h-full relative">
-          <div className="transition-all duration-300 transform group-hover:-translate-y-2">
-            <img src={job.companyLogoURL} alt={`${job.companyName} logo`} className="w-12 h-12 mb-2 rounded object-contain mx-auto" />
-            <h3 className="font-semibold text-sm mb-1 line-clamp-2 hover:line-clamp-none text-center">{job.jobTitle}</h3>
-            <p className="text-xs mb-1 text-gray-600 text-center">{job.companyName}</p>
-            <p className="text-xs mb-1 text-gray-600 text-center">{job.location}</p>
-            <p className="text-xs mb-1 text-gray-600 text-center">{job.jobType}</p>
-          </div>
-          <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-full group-hover:translate-y-0">
-            <Button asChild className="w-full text-xs" variant={job.ifEasyApply ? "default" : "outline"}>
-              <a href={job.applyLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
-                {job.ifEasyApply ? "Easy Apply" : "Apply"}
-              </a>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  return (
+    <Card className="flex flex-col h-full hover:shadow-lg transition-all duration-300 group overflow-hidden">
+      <CardContent className="p-4 flex flex-col justify-between h-full relative">
+        <div className="transition-all duration-3000 transform group-hover:-translate-y-2">
+          <h3 className="font-semibold text-sm mb-1 line-clamp-2 hover:line-clamp-none text-center">{job.jobTitle}</h3>
+          <p className="text-xs mb-1 text-gray-600 text-center">{job.companyName}</p>
+          <p className="text-xs mb-1 text-gray-600 text-center">{job.location}</p>
+          <p className="text-xs mb-1 text-gray-600 text-center">{job.jobType}</p>
+        </div>
+        <div className="mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <Button asChild className="w-full text-xs" variant={job.ifEasyApply ? "default" : "outline"}>
+            <a href={job.applyLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+              {job.ifEasyApply ? "Easy Apply" : "Apply"}
+            </a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
