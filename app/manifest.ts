@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'AI-powered job application management platform',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
+    background_color: '#000000',
     theme_color: '#000000',
     icons: [
       {
@@ -21,9 +21,10 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-    // iOS specific properties
-    apple_mobile_web_app_capable: 'yes',
-    apple_mobile_web_app_status_bar_style: 'default',
-    apple_mobile_web_app_title: 'Haloweave',
+    // iOS specific properties are added using type assertion
+  } as MetadataRoute.Manifest & {
+    apple_mobile_web_app_capable: 'yes';
+    apple_mobile_web_app_status_bar_style: 'default';
+    apple_mobile_web_app_title: 'Haloweave';
   }
 }
