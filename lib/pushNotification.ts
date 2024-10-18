@@ -1,5 +1,5 @@
-import webpush from 'web-push';
 import { PrismaClient } from '@prisma/client';
+import webpush from 'web-push';
 
 const prisma = new PrismaClient();
 
@@ -60,8 +60,8 @@ export async function sendTargetedNotification(jobData: {
   
       console.log('Targeted notifications sent successfully');
     } catch (error) {
-      console.error('Error sending targeted notifications:', error);
+        console.error('Error sending targeted notifications:', error);
+      }
     }
-  }
 
 export { webpush };
