@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 
@@ -25,6 +26,9 @@ export default function PushNotificationManager() {
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [jobTitle, setJobTitle] = useState('');
+  const [company, setCompany] = useState('');
+  const [location, setLocation] = useState('');
 
   useEffect(() => {
     const checkSupport = async () => {
@@ -76,19 +80,20 @@ export default function PushNotificationManager() {
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
       }
-  
+
       console.log('Push Subscription:', JSON.stringify(sub));
       setSubscription(sub);
-      
-      // Send subscription to server
+
+      // Send subscription to server with job preferences
       await fetch('/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...sub,
+          subscription: sub,
           userId,
+          jobPreferences: [{ jobTitle, company, location }],
         }),
       });
     } catch (error) {
@@ -100,7 +105,7 @@ export default function PushNotificationManager() {
     try {
       await subscription?.unsubscribe();
       setSubscription(null);
-      
+
       // Remove subscription from server
       await fetch('/api/unsubscribe', {
         method: 'POST',
@@ -134,6 +139,25 @@ export default function PushNotificationManager() {
 
   return (
     <div className="space-y-4">
+      {!subscription && (
+        <>
+          <Input
+            placeholder="Job Title (optional)"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+          />
+          <Input
+            placeholder="Company (optional)"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+          />
+          <Input
+            placeholder="Location (optional)"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </>
+      )}
       {subscription ? (
         <Button onClick={unsubscribeFromPush}>Unsubscribe from Push Notifications</Button>
       ) : (
