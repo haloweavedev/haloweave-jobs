@@ -31,7 +31,7 @@ self.addEventListener('push', function(event) {
     console.log('Notification closed');
     
     event.waitUntil(
-      clients.openWindow('http://localhost:3000')
+      clients.openWindow('https://haloweave-jobs.vercel.app')
         .then((windowClient) => console.log('Window opened:', windowClient))
         .catch((error) => console.error('Error opening window:', error))
     );
