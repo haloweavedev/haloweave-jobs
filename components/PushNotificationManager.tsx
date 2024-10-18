@@ -124,8 +124,8 @@ export default function PushNotificationManager() {
         <p>To enable push notifications on iOS, please add this website to your home screen.</p>
         <ol>
           <li>Tap the share button in Safari</li>
-          <li>Scroll down and tap "Add to Home Screen"</li>
-          <li>Tap "Add" in the top right corner</li>
+          <li>Scroll down and tap &quot;Add to Home Screen&quot;</li>
+          <li>Tap &quot;Add&quot; in the top right corner</li>
           <li>Open the app from your home screen</li>
         </ol>
       </div>
