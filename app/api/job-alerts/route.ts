@@ -166,8 +166,3 @@ function parseJobsFromEmail(emailBody: string): Job[] {
 
   return jobs;
 }
-
-
-export const config = {
-  runtime: 'edge',
-};
