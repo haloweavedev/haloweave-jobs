@@ -84,7 +84,12 @@ function parseJobsFromEmail(emailBody: string): Job[] {
     if (!isParsingJobs) continue;
 
     // Stop parsing when we reach the end of the job listings
-    if (line === 'See all jobs' || line.startsWith('------------------------------')) {
+    if (
+      line === 'See all jobs' ||
+      line.startsWith('------------------------------') ||
+      line.startsWith('Get the new LinkedIn') ||
+      line.startsWith('Also available on mobile')
+    ) {
       // Add the last job if it has required fields
       if (currentJob.companyName && currentJob.jobTitle && currentJob.applyLink) {
         jobs.push(currentJob as Job);
@@ -96,10 +101,17 @@ function parseJobsFromEmail(emailBody: string): Job[] {
     if (line.startsWith('[image:')) {
       const companyName = line.replace('[image:', '').replace(']', '').trim();
 
-      // Skip non-company images
-      if (
-        ['Easy Apply', 'The George Washington University', 'LinkedIn', 'Download on the App Store', 'Get it on Google Play'].includes(companyName)
-      ) {
+      // Skip non-company images and unwanted entries
+      const unwantedCompanyNames = [
+        'Easy Apply',
+        'The George Washington University',
+        'LinkedIn',
+        'Download on the App Store',
+        'Get it on Google Play',
+        'i18n_premium_icon_alt_text_redesign_flavor',
+      ];
+
+      if (unwantedCompanyNames.includes(companyName)) {
         continue;
       }
 
@@ -118,16 +130,23 @@ function parseJobsFromEmail(emailBody: string): Job[] {
       currentJob.applyLink = line.slice(1, -1); // Remove the angle brackets
     }
     // Check for job title
-    else if (!currentJob.jobTitle && !line.startsWith('https://') && !line.startsWith('Actively recruiting') && !line.startsWith('Easy Apply')) {
+    else if (
+      !currentJob.jobTitle &&
+      !line.startsWith('https://') &&
+      !line.startsWith('Actively recruiting') &&
+      !line.startsWith('Easy Apply') &&
+      !line.startsWith('See all jobs')
+    ) {
+      // Skip lines that are not job titles
+      const unwantedJobTitles = ['Fast growing', '1 school alum', '2 school alumni'];
+      if (unwantedJobTitles.includes(line)) {
+        continue;
+      }
       currentJob.jobTitle = line;
     }
     // Check for location and job type
-    else if (currentJob.companyName && line.startsWith(currentJob.companyName + ' ·')) {
-      const parts = line.split('·').map(s => s.trim());
-      if (parts.length >= 2) {
-        currentJob.location = parts[1];
-        currentJob.jobType = parts[2] || '';
-      }
+    else if (currentJob.companyName && (line.includes('(On-site)') || line.includes('(Hybrid)') || line.includes('(Remote)'))) {
+      currentJob.location = line;
     }
     // Check for Easy Apply tag
     else if (line.toLowerCase().includes('easy apply')) {
