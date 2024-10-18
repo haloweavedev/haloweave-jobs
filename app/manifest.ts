@@ -21,5 +21,9 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
+    // iOS specific properties
+    apple_mobile_web_app_capable: 'yes',
+    apple_mobile_web_app_status_bar_style: 'default',
+    apple_mobile_web_app_title: 'Haloweave',
   }
 }

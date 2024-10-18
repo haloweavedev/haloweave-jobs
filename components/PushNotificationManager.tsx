@@ -21,32 +21,32 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export default function PushNotificationManager() {
-    const [isSupported, setIsSupported] = useState(false);
-    const [subscription, setSubscription] = useState<PushSubscription | null>(null);
-    const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const [isSupported, setIsSupported] = useState(false);
+  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    console.log('PushNotificationManager mounted');
-    console.log('VAPID Public Key:', VAPID_PUBLIC_KEY);
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      console.log('Push notifications are supported');
-      setIsSupported(true);
-      registerServiceWorker();
-    } else {
-      console.log('Push notifications are not supported');
-    }
-    setNotificationPermission(Notification.permission);
-}, []);
+    const checkSupport = async () => {
+      const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(iOS);
+
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        setIsSupported(true);
+        await registerServiceWorker();
+      }
+
+      // Check if the app is installed (works for iOS PWA)
+      setIsInstalled(window.matchMedia('(display-mode: standalone)').matches);
+    };
+
+    checkSupport();
+  }, []);
 
   async function registerServiceWorker() {
     try {
-      console.log('Registering service worker');
       const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service Worker registered:', registration);
-      
-      console.log('Checking existing push subscription');
       const sub = await registration.pushManager.getSubscription();
-      console.log('Existing subscription:', sub);
       setSubscription(sub);
     } catch (error) {
       console.error('Error registering service worker:', error);
@@ -55,24 +55,42 @@ export default function PushNotificationManager() {
 
   async function subscribeToPush() {
     try {
-      console.log('Subscribing to push notifications');
-      const registration = await navigator.serviceWorker.ready;
-      console.log('Service Worker is ready');
-      
-      console.log('VAPID Public Key before conversion:', VAPID_PUBLIC_KEY);
-      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      console.log('Application Server Key:', applicationServerKey);
+      // Fetch the user ID first
+      const userResponse = await fetch('/api/get-user-id');
+      if (!userResponse.ok) {
+        throw new Error('Failed to get user ID');
+      }
+      const { userId } = await userResponse.json();
 
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: applicationServerKey,
-      });
+      const registration = await navigator.serviceWorker.ready;
+      
+      let sub;
+      if (isIOS) {
+        sub = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: VAPID_PUBLIC_KEY
+        });
+      } else {
+        sub = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+      }
+  
       console.log('Push Subscription:', JSON.stringify(sub));
       setSubscription(sub);
       
-      // Here you would typically send the subscription to your server
-      console.log('Sending subscription to server...');
-      // Implement the API call to your server here
+      // Send subscription to server
+      await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...sub,
+          userId,
+        }),
+      });
     } catch (error) {
       console.error('Error subscribing to push:', error);
     }
@@ -80,14 +98,17 @@ export default function PushNotificationManager() {
 
   async function unsubscribeFromPush() {
     try {
-      console.log('Unsubscribing from push notifications');
       await subscription?.unsubscribe();
-      console.log('Unsubscribed successfully');
       setSubscription(null);
       
-      // Here you would typically remove the subscription from your server
-      console.log('Removing subscription from server...');
-      // Implement the API call to your server here
+      // Remove subscription from server
+      await fetch('/api/unsubscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ endpoint: subscription?.endpoint }),
+      });
     } catch (error) {
       console.error('Error unsubscribing from push:', error);
     }
@@ -97,45 +118,18 @@ export default function PushNotificationManager() {
     return <p>Push notifications are not supported in this browser.</p>;
   }
 
-  async function showTestNotification() {
-    console.log('showTestNotification function called');
-    
-    if (notificationPermission !== 'granted') {
-      console.log('Notification permission not granted, requesting permission');
-      const permission = await Notification.requestPermission();
-      setNotificationPermission(permission);
-      console.log('New notification permission status:', permission);
-      if (permission !== 'granted') {
-        console.log('Notification permission denied');
-        return;
-      }
-    }
-  
-    console.log('Creating notification');
-    try {
-      const notification = new Notification('Haloweave Jobs Alert', {
-        body: 'New job opportunity matching your preferences!',
-        icon: '/web-app-manifest-192x192.png',
-        badge: '/badge.png',
-        data: {
-          url: 'https://haloweave.com/', // Replace with your actual job URL
-        },
-        tag: 'job-alert',
-      });
-  
-      console.log('Notification created successfully');
-  
-      notification.onclick = function() {
-        console.log('Notification clicked');
-        window.open(notification.data.url, '_blank');
-      };
-    } catch (error) {
-      console.error('Error creating notification:', error);
-    }
-  }
-
-  if (!isSupported) {
-    return <p>Push notifications are not supported in this browser.</p>;
+  if (isIOS && !isInstalled) {
+    return (
+      <div>
+        <p>To enable push notifications on iOS, please add this website to your home screen.</p>
+        <ol>
+          <li>Tap the share button in Safari</li>
+          <li>Scroll down and tap "Add to Home Screen"</li>
+          <li>Tap "Add" in the top right corner</li>
+          <li>Open the app from your home screen</li>
+        </ol>
+      </div>
+    );
   }
 
   return (
@@ -145,7 +139,6 @@ export default function PushNotificationManager() {
       ) : (
         <Button onClick={subscribeToPush}>Subscribe to Push Notifications</Button>
       )}
-      <Button onClick={showTestNotification}>Show Test Notification</Button>
     </div>
   );
 }

@@ -23,6 +23,7 @@ model User {
   jobAlerts         JobAlert[]
   resumeText        String?          @db.Text
   resumeAnalysis    Json?
+  pushSubscriptions PushSubscription[]
 }
 
 model Email {
@@ -71,6 +72,17 @@ model JobAlert {
   receivedDate  DateTime
   labels        String[]
   user          User     @relation(fields: [userId], references: [id])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum ApplicationStatus {
