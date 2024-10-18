@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Mail, Briefcase, User, Building } from "lucide-react";
 import Header from '@/components/Header';
+import PushNotificationManager from '@/components/PushNotificationManager';
 import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 import Chatbot from '@/components/Chatbot';
 import SentEmailsSync from '@/components/SentEmailsSync';
@@ -273,6 +274,17 @@ export default function Dashboard() {
 
         {/* Job Alerts Section */}
         <JobAlertsList />
+
+        {/* Push Notifications */}
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Push Notifications</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PushNotificationManager />
+          </CardContent>
+        </Card>
 
         {/* Chatbot */}
         {emails.length > 0 && (
