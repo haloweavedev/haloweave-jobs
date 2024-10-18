@@ -21,6 +21,8 @@
     "@studio-freight/lenis": "^1.0.42",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "embla-carousel-autoplay": "^8.3.0",
+    "embla-carousel-react": "^8.3.0",
     "fs": "^0.0.1-security",
     "googleapis": "^105.0.0",
     "gsap": "^3.12.5",

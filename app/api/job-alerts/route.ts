@@ -5,13 +5,13 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 interface Job {
-  title: string;
-  company: string;
-  location?: string;
-  jobType?: string;
-  salary?: string;
-  additionalInfo?: string;
+  companyLogoURL: string;
+  jobTitle: string;
+  companyName: string;
+  location: string;
+  jobType: string;
   applyLink: string;
+  ifEasyApply: boolean;
 }
 
 interface JobAlert {
@@ -21,7 +21,6 @@ interface JobAlert {
 
 export async function GET() {
   const { userId } = auth();
-
   if (!userId) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
@@ -30,18 +29,11 @@ export async function GET() {
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
-
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     console.log(`Fetching job alerts for user: ${user.id}`);
-
-    // Check if the jobAlert model exists on the Prisma client
-    if (!prisma.jobAlert) {
-      console.error('JobAlert model not found in Prisma client');
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
 
     const latestJobAlerts = await prisma.jobAlert.findMany({
       where: { userId: user.id },
@@ -51,16 +43,12 @@ export async function GET() {
 
     console.log(`Found ${latestJobAlerts.length} job alerts`);
 
-    if (latestJobAlerts.length > 0) {
-      console.log('Raw email content of first alert:', latestJobAlerts[0]?.body);
-    }
-
     const parsedAlerts = latestJobAlerts.map((alert) => ({
       date: alert.receivedDate.toLocaleDateString(),
       jobs: parseJobsFromEmail(alert.body),
     }));
 
-    console.log('Parsed alerts:', parsedAlerts);
+    console.log('Parsed alerts:', JSON.stringify(parsedAlerts, null, 2));
 
     return NextResponse.json(parsedAlerts);
   } catch (error) {
@@ -80,36 +68,48 @@ function parseJobsFromEmail(emailBody: string): Job[] {
     const line = lines[i].trim();
 
     if (line.startsWith('[image:')) {
-      // New job listing starts
       if (Object.keys(currentJob).length > 0) {
         jobs.push(currentJob as Job);
       }
-      currentJob = { company: line.replace('[image:', '').replace(']', '').trim() };
+      currentJob = {
+        companyName: line.replace('[image:', '').replace(']', '').trim(),
+        companyLogoURL: '',
+        ifEasyApply: false,
+      };
     } else if (line.startsWith('https://www.linkedin.com/comm/jobs/view/')) {
       currentJob.applyLink = line;
-    } else if (!currentJob.title && line.length > 0 && !line.startsWith('https://')) {
-      currentJob.title = line;
+      currentJob.companyLogoURL = line; // Using applyLink as companyLogoURL for now
+    } else if (!currentJob.jobTitle && line.length > 0 && !line.startsWith('https://')) {
+      currentJob.jobTitle = line;
     } else if (line.includes('·')) {
       const [location, jobType] = line.split('·').map(s => s.trim());
       currentJob.location = location;
-      currentJob.jobType = jobType;
-    } else if (line.startsWith('$') || line.includes('/year')) {
-      currentJob.salary = line;
+      currentJob.jobType = extractJobType(jobType);
+    } else if (line.toLowerCase().includes('easy apply')) {
+      currentJob.ifEasyApply = true;
     }
 
-    // If we've collected all necessary information, add the job to the list
-    if (currentJob.title && currentJob.company && currentJob.applyLink && !jobs.find(job => job.applyLink === currentJob.applyLink)) {
+    if (currentJob.jobTitle && currentJob.companyName && currentJob.applyLink && 
+        currentJob.location && currentJob.jobType && 
+        !jobs.find(job => job.applyLink === currentJob.applyLink)) {
       jobs.push(currentJob as Job);
       currentJob = {};
     }
   }
 
+  console.log(`Parsed ${jobs.length} jobs`);
+  console.log('First job:', JSON.stringify(jobs[0], null, 2));
+
   return jobs;
 }
 
-function debugLog(message: string, data?: any) {
-  console.log(`DEBUG: ${message}`);
-  if (data) {
-    console.log(JSON.stringify(data, null, 2));
-  }
+function extractJobType(jobTypeString: string): string {
+  if (jobTypeString.includes('Remote')) return 'Remote';
+  if (jobTypeString.includes('Hybrid')) return 'Hybrid';
+  if (jobTypeString.includes('On-site')) return 'On-site';
+  return 'Not specified';
 }
+
+export const config = {
+  runtime: 'edge',
+};
